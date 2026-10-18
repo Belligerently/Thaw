@@ -803,9 +803,13 @@ final class DisplaySettingsManager {
         configuration(for: displayID).thawBarLocation
     }
 
-    /// Whether hidden items should always be shown for the given display.
+    /// Shows every item on displays at least a chosen width.
+    let wideDisplayRule = WideDisplayRule()
+
+    /// Whether hidden items should always be shown for the given display:
+    /// its own setting, or the wide display rule.
     func alwaysShowHiddenItems(for displayID: CGDirectDisplayID) -> Bool {
-        configuration(for: displayID).alwaysShowHiddenItems
+        configuration(for: displayID).alwaysShowHiddenItems || wideDisplayRule.showsEveryItem(on: displayID)
     }
 
     /// Whether any connected display has "Always show hidden items" enabled.

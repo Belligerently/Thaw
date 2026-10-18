@@ -184,6 +184,8 @@ nonisolated enum Defaults {
             .confirmSpacingRelaunch: DefaultValue.confirmSpacingRelaunch,
             .unconfirmedSpacingProfileScope: DefaultValue.unconfirmedSpacingProfileScope.rawValue,
             .spacingApplyMode: DefaultValue.spacingApplyMode.rawValue,
+            .showEveryItemOnWideDisplays: DefaultValue.showEveryItemOnWideDisplays,
+            .wideDisplayMinimumWidth: DefaultValue.wideDisplayMinimumWidth,
 
             // Event Delivery
             .axMessagingTimeout: DefaultValue.axMessagingTimeout,
@@ -326,6 +328,8 @@ extension Defaults {
         static let confirmSpacingRelaunch = true
         static let unconfirmedSpacingProfileScope: SpacingProfileSaveScope = .activeProfile
         static let spacingApplyMode: SpacingApplyMode = .relaunchApps
+        static let showEveryItemOnWideDisplays = false
+        static let wideDisplayMinimumWidth: Double = 2560
 
         // MARK: Event Delivery
 
@@ -399,6 +403,8 @@ extension Defaults {
         case confirmSpacingRelaunch = "ConfirmSpacingRelaunch"
         case unconfirmedSpacingProfileScope = "UnconfirmedSpacingProfileScope"
         case spacingApplyMode = "SpacingApplyMode"
+        case showEveryItemOnWideDisplays = "ShowEveryItemOnWideDisplays"
+        case wideDisplayMinimumWidth = "WideDisplayMinimumWidth"
 
         // MARK: Hotkeys Settings
 

@@ -56,6 +56,8 @@ struct DisplaySettingsPane: View {
                 }
             }
 
+            WideDisplayRuleSection(rule: displaySettings.wideDisplayRule)
+
             // Spaces belong to displays in macOS, so their controls follow the display's.
             SpacesControlsContent(activeSpaceID: UInt64(bitPattern: Int64(appState.activeSpace.spaceID)))
         }
@@ -106,5 +108,28 @@ struct DisplaySettingsPane: View {
                 }
             }
         )
+    }
+}
+
+/// The rule that shows every item while the menu bar is on a wide display.
+private struct WideDisplayRuleSection: View {
+    @Bindable var rule: WideDisplayRule
+
+    var body: some View {
+        ThawSection("Wide displays") {
+            Toggle("Show every item on wide displays", isOn: $rule.isEnabled)
+                .annotation("While the menu bar is on a display at least this wide, hidden items stay in the menu bar, as if “Always show hidden items” were on for that display.")
+
+            if rule.isEnabled {
+                LabeledContent {
+                    ThawSlider(value: $rule.minimumWidth, in: WideDisplayRule.widthRange, step: 160) {
+                        Text(verbatim: "\(Int(rule.minimumWidth)) pt")
+                            .monospacedDigit()
+                    }
+                } label: {
+                    Text("Wider than")
+                }
+            }
+        }
     }
 }

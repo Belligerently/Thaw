@@ -74,5 +74,14 @@ nonisolated extension SearchIndex {
             keywords: ["spacing", "confirm", "relaunch", "restart", "apps", "without", "immediate", "next restart", "when applying spacing"],
             property: nil
         ),
+        SearchEntry(
+            id: "displays.wideDisplayRule",
+            title: "Show every item on wide displays",
+            descriptionText: String(localized: "Keeps hidden items in the menu bar while it is on a display at least the width you choose."),
+            pane: .displays,
+            section: "Wide displays",
+            keywords: ["wide", "large", "big", "external", "monitor", "screen size", "width", "show all", "every item"],
+            property: nil
+        ),
     ]
 }

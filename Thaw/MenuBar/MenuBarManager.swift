@@ -227,6 +227,8 @@ final class MenuBarManager {
     let leadingEdgeWatcher = MenuBarLeadingEdgeWatcher()
 
     private var alwaysShowHiddenItemsController: AlwaysShowHiddenItemsController?
+    /// Re-applies "Always show hidden items" when the active menu bar moves to another display.
+    private let activeDisplayWatcher = ActiveMenuBarDisplayWatcher()
 
     var shouldDeferBarMutation: Bool {
         guard let nativeMenuBarStateChangedAt else { return false }
@@ -472,10 +474,20 @@ final class MenuBarManager {
             }
         )
         alwaysShowHiddenItemsController?.observeDisplaySettings { [settings = appState.settings.displaySettings] in
-            settings.configurations
+            // Reading the wide display rule here makes its changes re-check too.
+            _ = (settings.wideDisplayRule.isEnabled, settings.wideDisplayRule.minimumWidth)
+            return settings.configurations
         } refreshControls: { [weak self] in
             self?.updateControlItemStates()
         }
+        activeDisplayWatcher.isNeeded = { [settings = appState.settings.displaySettings] in
+            settings.wideDisplayRule.isEnabled || settings.isAlwaysShowEnabledOnAnyDisplay
+        }
+        activeDisplayWatcher.onChange = { [weak self] in
+            self?.synchronizeAlwaysShowHiddenItems()
+            self?.updateControlItemStates()
+        }
+        activeDisplayWatcher.start()
 
         // Debounce cache changes so new items become assignable without churning hotkey registrations each tick.
         let hotkeyTask = Task { @MainActor [weak self, itemManager = appState.itemManager] in
