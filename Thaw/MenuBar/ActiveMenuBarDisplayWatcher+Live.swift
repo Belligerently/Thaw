@@ -8,7 +8,7 @@
 import AppKit
 
 extension ActiveMenuBarDisplayWatcher {
-    /// Checks on app activation, a Space change, a display change, and once a second.
+    /// Checks on app activation, a Space change and once a second, and reports every display change.
     func start() {
         guard observers.isEmpty else { return }
         check()
@@ -23,7 +23,7 @@ extension ActiveMenuBarDisplayWatcher {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            MainActor.assumeIsolated { self?.check() }
+            MainActor.assumeIsolated { self?.screenParametersChanged() }
         })
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {

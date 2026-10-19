@@ -39,4 +39,11 @@ final class ActiveMenuBarDisplayWatcher {
             onChange?()
         }
     }
+
+    /// Reports a display change even on the same display, since a new resolution changes its width.
+    func screenParametersChanged() {
+        guard let displayID = readDisplayID() else { return }
+        lastDisplayID = displayID
+        onChange?()
+    }
 }

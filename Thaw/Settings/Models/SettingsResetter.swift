@@ -101,5 +101,7 @@ extension AppSettings {
         displaySettings.confirmSpacingRelaunch = Defaults.DefaultValue.confirmSpacingRelaunch
         displaySettings.unconfirmedSpacingProfileScope = Defaults.DefaultValue.unconfirmedSpacingProfileScope
         displaySettings.spacingApplyMode = Defaults.DefaultValue.spacingApplyMode
+        displaySettings.wideDisplayRule.isEnabled = Defaults.DefaultValue.showEveryItemOnWideDisplays
+        displaySettings.wideDisplayRule.minimumWidth = Defaults.DefaultValue.wideDisplayMinimumWidth
     }
 }

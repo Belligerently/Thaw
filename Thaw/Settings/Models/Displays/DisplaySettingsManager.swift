@@ -812,9 +812,10 @@ final class DisplaySettingsManager {
         configuration(for: displayID).alwaysShowHiddenItems || wideDisplayRule.showsEveryItem(on: displayID)
     }
 
-    /// Whether any connected display has "Always show hidden items" enabled.
+    /// Whether hidden items may be always shown somewhere: a connected
+    /// display has "Always show hidden items" on, or the wide display rule is on.
     var isAlwaysShowEnabledOnAnyDisplay: Bool {
-        connectedDisplays().contains { configuration(forUUID: $0.id).alwaysShowHiddenItems }
+        wideDisplayRule.isEnabled || connectedDisplays().contains { configuration(forUUID: $0.id).alwaysShowHiddenItems }
     }
 
     // MARK: - Mutation (Immutable Pattern)

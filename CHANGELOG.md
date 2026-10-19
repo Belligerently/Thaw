@@ -51,6 +51,7 @@ After you update:
 
 ### Fixed: hiding and sections
 
+- **"Always show hidden items" for one display follows the menu bar.** When the menu bar moves to another display, hidden items now show or hide for that display right away. By @diazdesandi.
 - **New items go to the section you chose.** With New Items set to Hidden or Always Hidden, they used to stay in Visible. Fixed by @diazdesandi.
 - **A ⌘-drag between sections is recorded,** and it opens the sections so you have room to drop between the dividers. Reported by Keylag and mrleblanc101 on Discord. Fixed by @diazdesandi.
 - **Hidden items stay hidden in Manual arrangement when an app starts.** Reported by @promonteiro89 in [#1357](https://github.com/thaw-app/Thaw/issues/1357). Fixed by @diazdesandi.

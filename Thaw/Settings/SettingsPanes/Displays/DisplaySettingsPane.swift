@@ -127,7 +127,7 @@ private struct WideDisplayRuleSection: View {
                             .monospacedDigit()
                     }
                 } label: {
-                    Text("Wider than")
+                    Text("At least")
                 }
             }
         }

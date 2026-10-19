@@ -68,6 +68,33 @@ struct WideDisplayRuleTests {
             #expect(!rule.showsEveryItem(on: 1))
         }
     }
+
+    @Test("The rule counts as always showing hidden items, on any display it covers")
+    func displaySettingsFollowTheRule() throws {
+        try withStore { _ in
+            let manager = DisplaySettingsManager()
+            #expect(!manager.isAlwaysShowEnabledOnAnyDisplay)
+            manager.wideDisplayRule.isEnabled = true
+            #expect(manager.isAlwaysShowEnabledOnAnyDisplay)
+            let displayID = CGMainDisplayID()
+            #expect(manager.alwaysShowHiddenItems(for: displayID) == manager.wideDisplayRule.showsEveryItem(on: displayID))
+        }
+    }
+
+    @Test("Resetting the display settings turns the rule off at its default width")
+    func resetTurnsTheRuleOff() throws {
+        try withStore { _ in
+            let settings = AppSettings()
+            settings.displaySettings.wideDisplayRule.isEnabled = true
+            settings.displaySettings.wideDisplayRule.minimumWidth = 3200
+            settings.advanced.skippedModuleStandIns = ["airdrop"]
+            settings.resetDisplay()
+            settings.resetAdvanced()
+            #expect(!settings.displaySettings.wideDisplayRule.isEnabled)
+            #expect(settings.displaySettings.wideDisplayRule.minimumWidth == 2560)
+            #expect(settings.advanced.skippedModuleStandIns == Set(Defaults.DefaultValue.skippedModuleStandIns))
+        }
+    }
 }
 
 @Suite("Active menu bar display watcher")
@@ -90,6 +117,21 @@ struct ActiveMenuBarDisplayWatcherTests {
         probe.displayID = 2
         watcher.check()
         watcher.check()
+        #expect(probe.changes == 1)
+    }
+
+    @Test("A new resolution on the same display is reported, since the rule reads its width")
+    func reportsAResolutionChange() {
+        let probe = Probe()
+        let watcher = ActiveMenuBarDisplayWatcher(readDisplayID: { probe.displayID })
+        watcher.onChange = { probe.changes += 1 }
+        watcher.check()
+        watcher.screenParametersChanged()
+        #expect(probe.changes == 1)
+        watcher.check()
+        #expect(probe.changes == 1)
+        probe.displayID = nil
+        watcher.screenParametersChanged()
         #expect(probe.changes == 1)
     }
 
