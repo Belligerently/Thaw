@@ -17,6 +17,9 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     private var statusItem: NSStatusItem?
     private var focus: FocusExtra?
     private var textInput: TextInputExtra?
+    private var timeMachine: TimeMachineExtra?
+    /// Whether Thaw asked for this stand-in to be hidden.
+    private var isHiddenByThaw = false
     private var slotStandIn: SlotStandIn?
     /// Held for as long as it is observed: KVO on a released
     /// NSRunningApplication crashes the helper.
@@ -68,6 +71,13 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
             let textInput = TextInputExtra(button: button)
             textInput.start()
             self.textInput = textInput
+        } else if role == .timeMachine, let button = item.button {
+            let timeMachine = TimeMachineExtra(button: button, symbolName: role.symbolName, label: role.displayName) { [weak self] in
+                self?.updateVisibility()
+            }
+            self.timeMachine = timeMachine
+            timeMachine.start()
+            updateVisibility()
         } else if role == .airDrop {
             statusItem?.button?.image = AirDropGlyph.image(accessibilityDescription: role.displayName)
             statusItem?.button?.toolTip = role.displayName
@@ -79,6 +89,7 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     func applicationWillTerminate(_: Notification) {
         focus?.stop()
         textInput?.stop()
+        timeMachine?.stop()
     }
 
     // MARK: Menu
@@ -89,10 +100,13 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         case .focus:
             focus?.populate(menu)
         case .timeMachine:
-            menu.addItem(actionItem(String(localized: "Back Up Now"), #selector(backUpNow)))
-            menu.addItem(actionItem(String(localized: "Browse Time Machine Backups"), #selector(browseBackups)))
-            menu.addItem(.separator())
-            menu.addItem(actionItem(String(localized: "Open Time Machine Settings…"), #selector(openTimeMachineSettings)))
+            timeMachine?.populate(
+                menu,
+                target: self,
+                backUpNow: #selector(backUpNow),
+                browse: #selector(browseBackups),
+                settings: #selector(openTimeMachineSettings)
+            )
         case .timer:
             menu.addItem(actionItem(String(localized: "Open Timers in Clock"), #selector(openClock)))
         case .airDrop:
@@ -174,7 +188,17 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
     }
 
     private func applyVisibility(bundleID: String, parentID: String) {
-        let isVisible = !ExtraVisibilityChannel.hiddenBundles(parent: parentID).contains(bundleID)
+        isHiddenByThaw = ExtraVisibilityChannel.hiddenBundles(parent: parentID).contains(bundleID)
+        updateVisibility()
+    }
+
+    /// Thaw's choice, and for Time Machine also whether it shows only during a backup.
+    private func updateVisibility() {
+        let isVisible = TimeMachineStatus.showsItem(
+            hiddenByThaw: isHiddenByThaw,
+            onlyWhileBackingUp: timeMachine?.onlyWhileBackingUp ?? false,
+            isRunning: timeMachine?.status.isRunning ?? false
+        )
         guard statusItem?.isVisible != isVisible else { return }
         statusItem?.isVisible = isVisible
     }

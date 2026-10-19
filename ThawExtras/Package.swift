@@ -23,5 +23,10 @@ let package = Package(
             name: "ThawExtraHelper",
             swiftSettings: [.swiftLanguageMode(.v6)]
         ),
+        .testTarget(
+            name: "ThawExtraHelperTests",
+            dependencies: ["ThawExtraHelper"],
+            swiftSettings: [.swiftLanguageMode(.v6)]
+        ),
     ]
 )
