@@ -21,7 +21,7 @@ After you update:
 
 ### New
 
-- **Thaw's Time Machine icon shows backups.** It spins while a backup runs, and its menu shows how far along the backup is. Choose Show Only While Backing Up in that menu to keep the icon out of the menu bar until a backup starts. Requested by jakimo on Discord. By @diazdesandi.
+- **Thaw's Time Machine icon shows backups.** It spins while a backup runs, and its menu shows how far along the backup is. Choose Show Only While Backing Up in that menu to keep the icon out of the menu bar until a backup starts. Suggested by jak1mo on Discord. By @diazdesandi.
 - **Show every item on wide displays.** Settings > Displays & Spaces > Wide displays keeps hidden items in the menu bar on any display at least as wide as you choose. By @diazdesandi.
 - **Choose which Apple items to replace.** When Replace Control Center items is on in Layout, each item has its own checkbox: Focus, AirDrop, Now Playing, Fast User Switching, Time Machine and the Input menu. Uncheck one to keep Apple's own item. What you replaced before stays replaced. By @diazdesandi.
 - **Choose how items are hidden in one place.** Layout has a Hiding method picker. Native keeps Live Activities, the camera indicator and Apple's own items on the menu bar. Standard hides any app's items. Everything also hides Clock, Control Center and Siri. By @diazdesandi.
@@ -108,6 +108,7 @@ After you update:
 
 ### Known issues
 
+- **The Game Mode indicator can't be hidden.** It stays on the menu bar whichever section it is in.
 - **Home and other items pinned from Control Center leave the menu bar while Hidden is closed**, if you use Standard or Everything. Layout marks them. Thaw can't keep them on the bar.
 - **Siri doesn't run Thaw's actions when you ask by voice.** The same actions work from Shortcuts and Spotlight.
 - **On some Macs, clicks in Settings land below the control.** Reported in [#1265](https://github.com/thaw-app/Thaw/issues/1265) and [#1244](https://github.com/thaw-app/Thaw/issues/1244). If it happens to you, [send us a log](https://www.getthaw.app/docs/thaw/frequent-issues#before-you-file-a-bug).
