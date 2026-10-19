@@ -21,6 +21,7 @@ After you update:
 
 ### New
 
+- **Choose which Apple items to replace.** Turning on Replace Control Center items in Layout shows a checkbox for each one: Focus, AirDrop, Now Playing, Fast User Switching, Time Machine and the Input menu. Leave a box unchecked to keep Apple's own item. What you replaced before stays replaced. By @diazdesandi.
 - **Choose how items are hidden in one place.** Layout has a Hiding method picker. Native keeps Live Activities, the camera indicator and Apple's own items on the menu bar. Standard hides any app's items. Everything also hides Clock, Control Center and Siri. By @diazdesandi.
 - **Move several items at once in Layout.** Command-click or Shift-click icons to select them, then drag any of them or right-click to move them all to another section. By @diazdesandi.
 - **Layout shows where a drag will land**, and marks items macOS takes off the menu bar on its own, such as Home pinned from Control Center. By @diazdesandi.

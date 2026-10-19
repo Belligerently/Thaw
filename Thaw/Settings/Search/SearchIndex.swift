@@ -181,6 +181,7 @@ nonisolated enum SearchIndex {
         // Set by Replace Control Center items, indexed under advanced.enableModuleStandIns.
         .advanced("enableTimeMachineTakeover"),
         .advanced("enableTextInputTakeover"),
+        .advanced("skippedModuleStandIns"),
         // Experimental toggles with no Settings UI.
         .advanced("enableExperimentalOverflowPrevention"),
         .advanced("enableTimerTakeover"),

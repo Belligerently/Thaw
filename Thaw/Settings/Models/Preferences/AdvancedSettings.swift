@@ -206,6 +206,14 @@ final class AdvancedSettings {
         }
     }
 
+    /// The modules enableModuleStandIns leaves as Apple's own.
+    var skippedModuleStandIns: Set<String> = Set(Defaults.DefaultValue.skippedModuleStandIns) {
+        didSet {
+            guard oldValue != skippedModuleStandIns else { return }
+            Defaults.set(skippedModuleStandIns.sorted(), forKey: .skippedModuleStandIns)
+        }
+    }
+
     /// Replace hidden Time Machine with a stand-in; restore the original on Visible assignment, disable, or quit.
     var enableTimeMachineTakeover = Defaults.DefaultValue.enableTimeMachineTakeover {
         didSet {
@@ -363,6 +371,7 @@ final class AdvancedSettings {
         Defaults.ifPresent(key: .enableControlItemPanel, assign: &enableControlItemPanel)
         Defaults.ifPresent(key: .fetchReleaseNotes, assign: &fetchReleaseNotes)
         Defaults.ifPresent(key: .enableModuleStandIns, assign: &enableModuleStandIns)
+        skippedModuleStandIns = Defaults.stringArray(forKey: .skippedModuleStandIns).map(Set.init) ?? skippedModuleStandIns
         Defaults.ifPresent(key: .enableTimeMachineTakeover, assign: &enableTimeMachineTakeover)
         Defaults.ifPresent(key: .enableTimerTakeover, assign: &enableTimerTakeover)
         Defaults.ifPresent(key: .enableTextInputTakeover, assign: &enableTextInputTakeover)

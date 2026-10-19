@@ -76,6 +76,7 @@ extension AppSettings {
         advanced.fetchReleaseNotes = Defaults.DefaultValue.fetchReleaseNotes
         advanced.enableNativeAppHiding = Defaults.DefaultValue.enableNativeAppHiding
         advanced.enableModuleStandIns = Defaults.DefaultValue.enableModuleStandIns
+        advanced.skippedModuleStandIns = Set(Defaults.DefaultValue.skippedModuleStandIns)
         advanced.enableTimeMachineTakeover = Defaults.DefaultValue.enableTimeMachineTakeover
         advanced.enableTimerTakeover = Defaults.DefaultValue.enableTimerTakeover
         advanced.enableTextInputTakeover = Defaults.DefaultValue.enableTextInputTakeover

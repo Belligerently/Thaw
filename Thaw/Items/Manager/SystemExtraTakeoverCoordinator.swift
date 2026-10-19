@@ -88,7 +88,9 @@ final class SystemExtraTakeoverCoordinator {
         }
 
         observationTasks.append(Task { @MainActor [weak self] in
-            let enabled = Observations { [weak self] in self?.settings?.enableModuleStandIns ?? false }
+            let enabled = Observations { [weak self] in
+                (self?.settings?.enableModuleStandIns ?? false, self?.settings?.skippedModuleStandIns ?? [])
+            }
             for await _ in enabled {
                 guard !Task.isCancelled else { return }
                 self?.reconcileModules()
@@ -124,7 +126,8 @@ final class SystemExtraTakeoverCoordinator {
             // Once the original is assigned Hidden its preference reads as off,
             // so the assignment is what says the module is still wanted.
             let isWanted = originalSection != .visible || Self.isShownInMenuBar(original)
-            guard settings.enableModuleStandIns, isWanted else {
+            let isChosen = Self.isChosen(standIn, enabled: settings.enableModuleStandIns, skipped: settings.skippedModuleStandIns)
+            guard isChosen, isWanted else {
                 if activeModuleStandIns.remove(standIn) != nil {
                     launcher.stop(standIn)
                 }
@@ -151,6 +154,11 @@ final class SystemExtraTakeoverCoordinator {
                 }
             }
         }
+    }
+
+    /// Stand-ins are on and this one's checkbox in Layout is still checked.
+    static func isChosen(_ standIn: SystemExtraStandIn, enabled: Bool, skipped: Set<String>) -> Bool {
+        enabled && !skipped.contains(standIn.rawValue)
     }
 
     /// Return the stand-in's section to the original once, including switches disabled between sessions, without undoing later moves.
