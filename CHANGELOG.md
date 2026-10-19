@@ -11,16 +11,18 @@ and the Sparkle appcast, unless overridden with the `release_notes` input.
 
 **macOS 27 only · Build 116**
 
-This beta brings everything fixed in alpha.8, alpha.9 and alpha.10. The docs, the changelog and the roadmap are now at [getthaw.app](https://www.getthaw.app).
+This beta brings everything fixed in alpha.8, alpha.9 and alpha.10, and a few things from the next alpha: a Time Machine icon that shows backups, a choice of which Apple items to replace, and a rule for wide displays. The docs, the changelog and the roadmap are now at [getthaw.app](https://www.getthaw.app).
 
 After you update:
 
 1. Open Settings > Layout and look at **Hiding method**. Your earlier choice carries over.
-2. **Replace Control Center items** in Layout is one switch now, and your earlier choices carry over.
+2. **Replace Control Center items** in Layout is one switch now, with a checkbox for each item. Your earlier choices carry over.
 3. If something looks wrong, [open an issue](https://github.com/thaw-app/Thaw/issues).
 
 ### New
 
+- **Thaw's Time Machine icon shows backups.** It spins while a backup runs, and its menu shows how far along the backup is. Choose Show Only While Backing Up in its menu to keep it out of the menu bar except during a backup. Requested by jakimo. By @diazdesandi.
+- **Show every item on wide displays.** Displays & Spaces › Wide displays keeps hidden items in the menu bar while it is on a display at least the width you choose. By @diazdesandi.
 - **Choose which Apple items to replace.** Turning on Replace Control Center items in Layout shows a checkbox for each one: Focus, AirDrop, Now Playing, Fast User Switching, Time Machine and the Input menu. Leave a box unchecked to keep Apple's own item. What you replaced before stays replaced. By @diazdesandi.
 - **Choose how items are hidden in one place.** Layout has a Hiding method picker. Native keeps Live Activities, the camera indicator and Apple's own items on the menu bar. Standard hides any app's items. Everything also hides Clock, Control Center and Siri. By @diazdesandi.
 - **Move several items at once in Layout.** Command-click or Shift-click icons to select them, then drag any of them or right-click to move them all to another section. By @diazdesandi.
@@ -37,6 +39,7 @@ After you update:
 
 ### Changed
 
+- **The last welcome screen shows its cards two by two,** so every demo and caption fits. By @diazdesandi.
 - **Settings is tidier.** One switch replaces Apple's items, Spaces is part of Displays, Triggers are under Automation, and Automatic updates is one choice shown in About and Privacy. Thaw has no analytics and no tracking; see [What Thaw sends over the network](https://www.getthaw.app/docs/thaw/network). By @diazdesandi.
 - **An imported profile's scripts are off until you turn them on.** Applying a profile from a file used to run the scripts it named. By @diazdesandi.
 - **Thaw reads the menu bar faster** and does less while it sits idle. By @diazdesandi.
