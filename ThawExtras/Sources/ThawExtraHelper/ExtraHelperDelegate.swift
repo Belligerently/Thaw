@@ -100,6 +100,8 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         case .focus:
             focus?.populate(menu)
         case .timeMachine:
+            // The menu shows the last answer; asking now keeps the icon and the next look current.
+            timeMachine?.checkNow()
             timeMachine?.populate(
                 menu,
                 target: self,
@@ -134,6 +136,14 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
         let process = Process()
         process.executableURL = URL(filePath: "/usr/bin/tmutil")
         process.arguments = ["startbackup", "--auto"]
+        // startbackup returns before backupd reports the backup as running, so
+        // ask again once it has had a moment to start.
+        process.terminationHandler = { [weak self] _ in
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(2))
+                self?.timeMachine?.checkNow()
+            }
+        }
         do {
             try process.run()
         } catch {
@@ -199,6 +209,7 @@ final class ExtraHelperDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate
             onlyWhileBackingUp: timeMachine?.onlyWhileBackingUp ?? false,
             isRunning: timeMachine?.status.isRunning ?? false
         )
+        timeMachine?.setVisibility(hiddenByThaw: isHiddenByThaw, shown: isVisible)
         guard statusItem?.isVisible != isVisible else { return }
         statusItem?.isVisible = isVisible
     }

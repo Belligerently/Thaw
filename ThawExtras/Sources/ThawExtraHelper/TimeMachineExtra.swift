@@ -23,6 +23,12 @@ final class TimeMachineExtra: NSObject {
 
     private(set) var status = TimeMachineStatus.idle
     private var pollTask: Task<Void, Never>?
+    /// Thaw hid the stand-in, so nobody sees what it shows.
+    private var isHiddenByThaw = false
+    /// The stand-in is in the menu bar right now.
+    private var isShown = true
+    private var areScreensAsleep = false
+    private var workspaceObservers: [NSObjectProtocol] = []
     private var spinTimer: Timer?
     private var spinFrame = 0
     private lazy var spinFrames: [NSImage] = Self.spinFrames(symbolName: symbolName, label: label)
@@ -38,10 +44,6 @@ final class TimeMachineExtra: NSObject {
         }
     }
 
-    /// How often tmutil is asked. Often enough to catch a backup a few seconds
-    /// after it starts, and more often while one runs, for the percentage.
-    private static let idleInterval = Duration.seconds(10)
-    private static let runningInterval = Duration.seconds(3)
     private static let spinInterval: TimeInterval = 1.0 / 12
 
     init(button: NSStatusBarButton, symbolName: String, label: String, visibilityDidChange: @escaping () -> Void) {
@@ -53,19 +55,65 @@ final class TimeMachineExtra: NSObject {
 
     func start() {
         showStill()
-        pollTask = Task { [weak self] in
-            while !Task.isCancelled {
-                let output = await Self.readStatus()
-                guard let self else { return }
-                self.update(TimeMachineStatus.parse(output))
-                try? await Task.sleep(for: self.status.isRunning ? Self.runningInterval : Self.idleInterval)
-            }
-        }
+        let center = NSWorkspace.shared.notificationCenter
+        workspaceObservers = [
+            center.addObserver(forName: NSWorkspace.screensDidSleepNotification, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.setScreensAsleep(true) }
+            },
+            center.addObserver(forName: NSWorkspace.screensDidWakeNotification, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.setScreensAsleep(false) }
+            },
+        ]
+        checkNow()
     }
 
     func stop() {
         pollTask?.cancel()
         spinTimer?.invalidate()
+        workspaceObservers.forEach(NSWorkspace.shared.notificationCenter.removeObserver)
+    }
+
+    /// Asks tmutil right away and starts the schedule over: after Back Up Now,
+    /// when the menu opens, and on waking. Does nothing while checking is paused.
+    func checkNow() {
+        pollTask?.cancel()
+        pollTask = nil
+        guard TimeMachineStatus.pollInterval(isRunning: status.isRunning, isHiddenByThaw: isHiddenByThaw, areScreensAsleep: areScreensAsleep) != nil else {
+            return
+        }
+        pollTask = Task { [weak self] in
+            while !Task.isCancelled {
+                let output = await Self.readStatus()
+                guard let self, !Task.isCancelled else { return }
+                self.update(TimeMachineStatus.parse(output))
+                guard let interval = TimeMachineStatus.pollInterval(
+                    isRunning: self.status.isRunning,
+                    isHiddenByThaw: self.isHiddenByThaw,
+                    areScreensAsleep: self.areScreensAsleep
+                ) else { return }
+                // Tolerance lets macOS fold the wake-up into others.
+                try? await Task.sleep(for: interval, tolerance: interval / 4)
+            }
+        }
+    }
+
+    /// Whether Thaw hides the stand-in and whether it is in the menu bar, from
+    /// the helper. Checking stops while Thaw hides it, and the icon only
+    /// turns while it can be seen.
+    func setVisibility(hiddenByThaw: Bool, shown: Bool) {
+        let wasHidden = isHiddenByThaw
+        isHiddenByThaw = hiddenByThaw
+        isShown = shown
+        updateSpinning()
+        if wasHidden != hiddenByThaw {
+            checkNow()
+        }
+    }
+
+    private func setScreensAsleep(_ asleep: Bool) {
+        areScreensAsleep = asleep
+        updateSpinning()
+        checkNow()
     }
 
     private func update(_ new: TimeMachineStatus) {
@@ -76,15 +124,9 @@ final class TimeMachineExtra: NSObject {
             return
         }
         logger.info("Time Machine backup \(new.isRunning ? "started" : "finished", privacy: .public)")
-        if new.isRunning {
-            startSpinning()
-        } else {
-            spinTimer?.invalidate()
-            spinTimer = nil
-            showStill()
-        }
         updateToolTip()
         visibilityDidChange()
+        updateSpinning()
     }
 
     // MARK: Menu
@@ -126,8 +168,20 @@ final class TimeMachineExtra: NSObject {
         button.image = spinFrames.first
     }
 
+    /// Turns while a backup runs and someone can see it: not while the item is
+    /// out of the menu bar or the screens are asleep.
+    private func updateSpinning() {
+        let spins = status.isRunning && isShown && !areScreensAsleep
+        if spins, spinTimer == nil {
+            startSpinning()
+        } else if !spins, spinTimer != nil {
+            spinTimer?.invalidate()
+            spinTimer = nil
+            showStill()
+        }
+    }
+
     private func startSpinning() {
-        spinTimer?.invalidate()
         spinFrame = 0
         let timer = Timer(timeInterval: Self.spinInterval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {

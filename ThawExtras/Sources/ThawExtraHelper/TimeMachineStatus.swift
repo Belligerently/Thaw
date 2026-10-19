@@ -39,6 +39,18 @@ struct TimeMachineStatus: Equatable {
             .trimmingCharacters(in: CharacterSet(charactersIn: " ;\""))
     }
 
+    /// How long to wait before asking tmutil again, or nil to stop asking.
+    /// Each ask wakes backupd, so the idle wait is long: a backup shows up
+    /// within half a minute, and opening the menu or Back Up Now asks at once.
+    /// While one runs the wait is short, for the percentage. Nothing is asked
+    /// while Thaw hides the stand-in or the screens are asleep.
+    static func pollInterval(isRunning: Bool, isHiddenByThaw: Bool, areScreensAsleep: Bool) -> Duration? {
+        if isHiddenByThaw || areScreensAsleep {
+            return nil
+        }
+        return isRunning ? .seconds(3) : .seconds(30)
+    }
+
     /// Whether the stand-in belongs in the menu bar. Thaw hiding it wins, and
     /// with "Show Only While Backing Up" on it appears only during a backup.
     static func showsItem(hiddenByThaw: Bool, onlyWhileBackingUp: Bool, isRunning: Bool) -> Bool {

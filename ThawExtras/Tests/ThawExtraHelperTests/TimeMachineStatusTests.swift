@@ -78,3 +78,17 @@ struct TimeMachineIconTests {
         #expect(sizes.count == 1)
     }
 }
+
+@Suite("Time Machine checks")
+struct TimeMachinePollTests {
+    @Test("Idle checks are spaced out, running ones close together")
+    func intervals() {
+        #expect(TimeMachineStatus.pollInterval(isRunning: false, isHiddenByThaw: false, areScreensAsleep: false) == .seconds(30))
+        #expect(TimeMachineStatus.pollInterval(isRunning: true, isHiddenByThaw: false, areScreensAsleep: false) == .seconds(3))
+    }
+
+    @Test("Nothing is checked while Thaw hides the stand-in or the screens sleep", arguments: [(true, false), (false, true), (true, true)])
+    func paused(hiddenByThaw: Bool, asleep: Bool) {
+        #expect(TimeMachineStatus.pollInterval(isRunning: true, isHiddenByThaw: hiddenByThaw, areScreensAsleep: asleep) == nil)
+    }
+}
