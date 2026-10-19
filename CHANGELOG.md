@@ -11,7 +11,7 @@ and the Sparkle appcast, unless overridden with the `release_notes` input.
 
 **macOS 27 only · Build 116**
 
-This beta has every fix from alpha.8, alpha.9 and alpha.10. It also brings three things from the next alpha: a Time Machine icon that shows when a backup runs, a checkbox for each Apple item Thaw can replace, and a setting for wide displays. The docs, the changelog and the roadmap are now at [getthaw.app](https://www.getthaw.app).
+This beta has every fix from alpha.8, alpha.9 and alpha.10. The docs, the changelog and the roadmap are now at [getthaw.app](https://www.getthaw.app).
 
 After you update:
 
