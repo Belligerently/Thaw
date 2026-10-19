@@ -177,19 +177,16 @@ struct SlideHUD<Content: View>: View {
 
 // MARK: - Integrations
 
-/// Prefer bundled icons, then permission-free Launch Services lookup, then SF Symbols.
-/// Compact mode fits the 128-point integration tile without a redundant glass offscreen pass.
+/// One app in the integrations card: its icon over its name, three to a
+/// half-width card. Prefers the bundled icon, then a permission-free Launch
+/// Services lookup, then an SF Symbol. The card's own caption says what they do.
 struct IntegrationCard: View {
     let appName: String
-    let subtitle: String
     let bundledAssetName: String?
     var bundleIdentifier: String?
     let fallbackSymbol: String
-    var isCompact = false
 
-    private var iconSide: CGFloat {
-        isCompact ? 28 : 52
-    }
+    private let iconSide: CGFloat = 24
 
     /// The app's own icon from Launch Services, when the app is installed.
     private var runtimeIcon: NSImage? {
@@ -211,57 +208,31 @@ struct IntegrationCard: View {
                     .scaledToFit()
             } else {
                 Image(systemName: fallbackSymbol)
-                    .font(.system(size: isCompact ? 18 : 28, weight: .medium))
+                    .font(.system(size: 18, weight: .medium))
                     .foregroundStyle(.secondary)
             }
         }
         .frame(width: iconSide, height: iconSide)
     }
 
-    private var name: some View {
-        Text(appName)
-            .font(ThawType.heading)
-    }
-
-    private var caption: some View {
-        Text(subtitle)
-            .font(ThawType.caption)
-            .foregroundStyle(.secondary)
-            .fixedSize(horizontal: false, vertical: true)
-    }
-
     var body: some View {
-        if isCompact {
-            HStack(spacing: ThawSpacing.row) {
-                icon
-                VStack(alignment: .leading, spacing: ThawSpacing.hairline) {
-                    name
-                    caption
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, ThawSpacing.inset)
-            .padding(.vertical, ThawSpacing.row)
-            .frame(maxWidth: .infinity)
-            .background(
-                RoundedRectangle(cornerRadius: ThawRadius.control, style: .continuous)
-                    .fill(Color.primary.opacity(0.04))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: ThawRadius.control, style: .continuous)
-                    .strokeBorder(.separator, lineWidth: 0.5)
-            )
-        } else {
-            VStack(spacing: 10) {
-                icon
-                name
-                caption
-                    .multilineTextAlignment(.center)
-            }
-            .padding(16)
-            .frame(maxWidth: .infinity)
-            .thawGlass(.panel, in: RoundedRectangle(cornerRadius: ThawRadius.card, style: .continuous))
+        VStack(spacing: ThawSpacing.hairline) {
+            icon
+            Text(appName)
+                .font(ThawType.label)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
         }
+        .padding(.horizontal, ThawSpacing.row)
+        .padding(.vertical, ThawSpacing.compact)
+        .frame(maxWidth: .infinity)
+        .background(
+            RoundedRectangle(cornerRadius: ThawRadius.control, style: .continuous)
+                .fill(Color.primary.opacity(0.04))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: ThawRadius.control, style: .continuous)
+                .strokeBorder(.separator, lineWidth: 0.5)
+        )
     }
 }

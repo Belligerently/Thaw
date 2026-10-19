@@ -177,16 +177,13 @@ struct BentoDemoContent: View {
     let demo: BentoDemo
     let phase: Double
 
-    /// The scale the small tiles show the shared bar at. The tile is 166pt
-    /// wide and the bar's natural width is near 390pt, so the bar is drawn
-    /// trailing-aligned and lets its leading end run off the card.
+    /// The scale the small tiles show the shared bar at. Half the window
+    /// wide, a tile fits the whole bar at this scale, revealed items included.
     private static let compactScale: CGFloat = 0.68
-    /// How far the compact bar is pushed past the tile's trailing edge, so
-    /// the capsule's rounded end is cut rather than floating inside the
-    /// card with a margin. The HUD under each compact bar is trailing-padded
-    /// by this plus half the visible width less half its own width, which
-    /// centres it under the part of the bar the card shows.
-    private static let compactOverflow: CGFloat = 36
+    /// How far the compact bar sits in from the tile's trailing edge. The bar
+    /// is trailing-aligned so revealed items grow it to the left, as in the
+    /// real menu bar, and the HUD under it is centred on it.
+    private static let compactInset: CGFloat = -24
 
     private var isStill: Bool {
         phase >= 1
@@ -300,8 +297,8 @@ struct BentoDemoContent: View {
     private var reveal: some View {
         let press = window(phase, 0.42, 0.56, edge: 0.05)
 
-        return DemoStage(scale: Self.compactScale, alignment: .trailing, overflow: Self.compactOverflow) {
-            VStack(alignment: .trailing, spacing: ThawSpacing.base) {
+        return DemoStage(scale: Self.compactScale, alignment: .trailing, overflow: Self.compactInset) {
+            VStack(spacing: ThawSpacing.base) {
                 DemoMenuBar(
                     hiddenSymbols: ["wifi", "battery.100", "speaker.wave.2"],
                     hiddenShown: phase > 0.5,
@@ -314,7 +311,6 @@ struct BentoDemoContent: View {
                         .foregroundStyle(.secondary)
                 }
                 .scaleEffect(1 - 0.08 * press)
-                .padding(.trailing, Self.compactOverflow + 88)
             }
         }
     }
@@ -371,8 +367,8 @@ struct BentoDemoContent: View {
     private var triggers: some View {
         let fired = ramp(phase, 0.15, 0.3)
 
-        return DemoStage(scale: Self.compactScale, alignment: .trailing, overflow: Self.compactOverflow) {
-            VStack(alignment: .trailing, spacing: ThawSpacing.base) {
+        return DemoStage(scale: Self.compactScale, alignment: .trailing, overflow: Self.compactInset) {
+            VStack(spacing: ThawSpacing.base) {
                 DemoMenuBar(
                     hiddenSymbols: ["mic.fill", "video.fill", "speaker.wave.2"],
                     hiddenShown: phase > 0.5,
@@ -386,7 +382,6 @@ struct BentoDemoContent: View {
                 }
                 .scaleEffect(0.9 + 0.1 * fired)
                 .opacity(fired)
-                .padding(.trailing, Self.compactOverflow + 68)
             }
         }
     }
@@ -435,8 +430,8 @@ struct BentoDemoContent: View {
     private var zen: some View {
         let badge = isStill ? 1 : window(phase, 0.42, 0.95)
 
-        return DemoStage(scale: Self.compactScale, alignment: .trailing, overflow: Self.compactOverflow) {
-            VStack(alignment: .trailing, spacing: ThawSpacing.base) {
+        return DemoStage(scale: Self.compactScale, alignment: .trailing, overflow: Self.compactInset) {
+            VStack(spacing: ThawSpacing.base) {
                 DemoMenuBar(
                     hiddenSymbols: ["wifi", "battery.100", "speaker.wave.2", "bell"],
                     hiddenShown: phase < 0.4,
@@ -450,42 +445,36 @@ struct BentoDemoContent: View {
                 }
                 .scaleEffect(0.9 + 0.1 * badge)
                 .opacity(badge)
-                .padding(.trailing, Self.compactOverflow + 80)
             }
         }
     }
 
     // MARK: Integrations
 
-    /// Still: three compact cards, each resolving its icon from the bundled
-    /// asset, then Launch Services, then a symbol (see IntegrationCard).
+    /// Still: three apps, each resolving its icon from the bundled asset,
+    /// then Launch Services, then a symbol (see IntegrationCard).
     private var integrations: some View {
         HStack(spacing: ThawSpacing.inset) {
             IntegrationCard(
                 appName: "Droppy",
-                subtitle: String(localized: "Install as a Droplet"),
                 bundledAssetName: "DroppyIcon",
-                fallbackSymbol: "arrow.triangle.2.circlepath",
-                isCompact: true
+                fallbackSymbol: "arrow.triangle.2.circlepath"
             )
             IntegrationCard(
                 appName: "Raycast",
-                subtitle: String(localized: "Toggle and search"),
                 bundledAssetName: "RaycastIcon",
                 bundleIdentifier: "com.raycast.macos",
-                fallbackSymbol: "bolt.fill",
-                isCompact: true
+                fallbackSymbol: "bolt.fill"
             )
             IntegrationCard(
                 appName: "Shortcuts",
-                subtitle: String(localized: "Run any action"),
                 bundledAssetName: nil,
                 bundleIdentifier: "com.apple.shortcuts",
-                fallbackSymbol: "square.2.layers.3d",
-                isCompact: true
+                fallbackSymbol: "square.2.layers.3d"
             )
         }
         .padding(.horizontal, ThawSpacing.inset)
+        .padding(.top, ThawSpacing.row)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

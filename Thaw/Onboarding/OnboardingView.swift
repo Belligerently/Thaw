@@ -11,7 +11,7 @@ import ThawUI
 /// Shared dimensions leave room for the bento grid, which needs more space than welcome or access.
 enum ThawOnboardingWindowMetrics {
     static let width: CGFloat = 760
-    static let height: CGFloat = 580
+    static let height: CGFloat = 680
 }
 
 /// The host applies all decisions at completion; the flow never writes settings, so quitting leaves no partial changes.
