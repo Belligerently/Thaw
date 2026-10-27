@@ -24,6 +24,9 @@ the items under New and Fixed.
 
 ## [Unreleased]
 
+### Fixed
+
+- With the menu bar set to hide automatically, an item opened from the Thaw Bar could stay in the visible section until its app was relaunched. It now goes back once the menu bar shows again.
 ### New
 
 - A General setting, Show Dock icon while Settings is open. Turn it off to keep Thaw out of the Dock and its recent apps when you open Settings and its other windows.
