@@ -26,6 +26,7 @@ the items under New and Fixed.
 
 ### Fixed
 
+- After Thaw moved an item, the Thaw Bar could keep showing it in its old section for several minutes.
 - Rehiding an item while the mouse was moving could leave the pointer in the top-left corner of the screen, under the Apple menu.
 
 ## [2.1.0] - 2026-10-14
