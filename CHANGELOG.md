@@ -24,6 +24,9 @@ the items under New and Fixed.
 
 ## [Unreleased]
 
+### New
+
+- A General setting, Show Dock icon while Settings is open. Turn it off to keep Thaw out of the Dock and its recent apps when you open Settings and its other windows.
 ### Fixed
 
 - After Thaw moved an item, the Thaw Bar could keep showing it in its old section for several minutes.
