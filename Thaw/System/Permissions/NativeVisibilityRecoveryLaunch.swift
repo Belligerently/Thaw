@@ -6,7 +6,6 @@
 //  Licensed under the GNU GPLv3
 
 import AppKit
-import MenuBarModel
 import PlatformRuntimeKit
 
 @MainActor
@@ -119,11 +118,6 @@ extension NativeVisibilityRecoveryModel {
         }
         let recovery = NativeAppVisibilityRecovery(ensureExclusiveAccess: ensureExclusive)
         let access = PickedFileAccess.controlCenterVisibilityRecovery
-        let bypassRecovery: (() throws -> [URL])? = if let bypasser = (recovery as AnyObject) as? any NativeVisibilityRecoveryBypassing {
-            { try bypasser.bypassRecovery() }
-        } else {
-            nil
-        }
         return NativeVisibilityRecoveryModel(environment: Environment(
             conflictingApplications: NativeVisibilityRecoveryLaunch.conflictingApplications,
             disableNativeHiding: { Defaults.set(false, forKey: .enableNativeAppHiding) },
@@ -140,8 +134,7 @@ extension NativeVisibilityRecoveryModel {
                 )
             },
             isUnreadableRecord: NativeVisibilityRecoveryLaunch.isUnreadableRecord,
-            setAsideUnreadableRecords: { try recovery.setAsideUnreadableRecords() },
-            bypassRecovery: bypassRecovery
+            setAsideUnreadableRecords: { try recovery.setAsideUnreadableRecords() }
         ))
     }
 }
