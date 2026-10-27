@@ -350,13 +350,9 @@ nonisolated enum SettingsURIKeyTable {
         "showOnScroll",
         "useIceBarOnlyOnNotchedDisplay",
         "hideApplicationMenus",
-        "hideDockIconWhenToggling",
         "showDockIconWithSettings",
         "enableAlwaysHiddenSection",
-        "useOptionClickToShowAlwaysHiddenSection",
-        "useDoubleClickToShowAlwaysHiddenSection",
         "enableSecondaryContextMenu",
-        "showAllSectionsOnUserDrag",
         "showMenuBarTooltips",
         "enableDiagnosticLogging",
         "customIceIconIsTemplate",
@@ -364,9 +360,6 @@ nonisolated enum SettingsURIKeyTable {
         "iceBarLocationOnHotkey",
         "enableMenuBarItemOverflow",
         "useThawBarOnNotchOverflow",
-        "searchIncludeVisible",
-        "searchIncludeHidden",
-        "searchIncludeAlwaysHidden",
         "moveCursorToRevealedItem",
     ]
 

@@ -6,6 +6,7 @@ $(SRCROOT)/MenuBarItemService/SourcePIDCache.swift
 $(SRCROOT)/MenuBarItemService/main.swift
 $(SRCROOT)/Shared/Bridging/Bridging.swift
 $(SRCROOT)/Shared/Bridging/Shims.swift
+$(SRCROOT)/Shared/Services/LegacyXPCMessage.swift
 $(SRCROOT)/Shared/Services/MenuBarCaptureService.swift
 $(SRCROOT)/Shared/Services/MenuBarItemService.swift
 $(SRCROOT)/Shared/Utilities/AXHelpers.swift
@@ -31,6 +32,7 @@ $(SRCROOT)/Thaw/Hotkeys/KeyCombination.swift
 $(SRCROOT)/Thaw/Hotkeys/Modifiers.swift
 $(SRCROOT)/Thaw/Main/AppDelegate.swift
 $(SRCROOT)/Thaw/Main/AppState.swift
+$(SRCROOT)/Thaw/Main/AutomaticUpdates.swift
 $(SRCROOT)/Thaw/Main/IceApp.swift
 $(SRCROOT)/Thaw/Main/LayoutResetCommand.swift
 $(SRCROOT)/Thaw/Main/Navigation/AppNavigationState.swift
@@ -80,6 +82,7 @@ $(SRCROOT)/Thaw/MenuBar/MenuBarItems/AXItemActivator.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/ClickReactionVerifier.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/LayoutReconciler.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/LayoutSolver.swift
+$(SRCROOT)/Thaw/MenuBar/MenuBarItems/LegacyXPCConnection.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/MenuBarCaptureServiceConnection.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/MenuBarItem+Enumeration.swift
 $(SRCROOT)/Thaw/MenuBar/MenuBarItems/MenuBarItem+Ordering.swift
@@ -169,6 +172,7 @@ $(SRCROOT)/Thaw/Settings/Models/MenuBarItemTrigger.swift
 $(SRCROOT)/Thaw/Settings/Models/MenuBarItemTriggersManager+Live.swift
 $(SRCROOT)/Thaw/Settings/Models/MenuBarItemTriggersManager.swift
 $(SRCROOT)/Thaw/Settings/Models/Profile.swift
+$(SRCROOT)/Thaw/Settings/Models/ProfileImportPolicy.swift
 $(SRCROOT)/Thaw/Settings/Models/ProfileManager+Live.swift
 $(SRCROOT)/Thaw/Settings/Models/ProfileManager.swift
 $(SRCROOT)/Thaw/Settings/Models/RehideStrategy.swift
@@ -199,6 +203,7 @@ $(SRCROOT)/Thaw/Settings/SettingsPanes/MenuBarLayoutSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/ProfilePreviewView.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/ProfileSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/SimpleModeSettingsPane.swift
+$(SRCROOT)/Thaw/Settings/SettingsPanes/SpacingApplyChoice.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/ToolsSettingsPane.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/Triggers/BluetoothDevicePicker.swift
 $(SRCROOT)/Thaw/Settings/SettingsPanes/Triggers/CommitTextField.swift
@@ -219,6 +224,8 @@ $(SRCROOT)/Thaw/UI/IceUI/IcePicker.swift
 $(SRCROOT)/Thaw/UI/IceUI/IceSection.swift
 $(SRCROOT)/Thaw/UI/IceUI/IceSlider.swift
 $(SRCROOT)/Thaw/UI/IceUI/IceWindow.swift
+$(SRCROOT)/Thaw/UI/IceUI/ThawButtonRoles.swift
+$(SRCROOT)/Thaw/UI/IceUI/ThawGlass.swift
 $(SRCROOT)/Thaw/UI/IceUI/ThawShadow.swift
 $(SRCROOT)/Thaw/UI/IceUI/ThawType.swift
 $(SRCROOT)/Thaw/UI/Modifiers/LocalEventMonitorModifier.swift
@@ -265,6 +272,7 @@ $(SRCROOT)/Thaw/Utilities/Predicates.swift
 $(SRCROOT)/Thaw/Utilities/ScreenCapture.swift
 $(SRCROOT)/Thaw/Utilities/SettingsURIHandler.swift
 $(SRCROOT)/Thaw/Utilities/SettingsURIParser.swift
+$(SRCROOT)/Thaw/Utilities/SettingsURISender.swift
 $(SRCROOT)/Thaw/Utilities/SimpleSemaphore.swift
 $(SRCROOT)/Thaw/Utilities/SpaceInfo.swift
 $(SRCROOT)/Thaw/Utilities/Swizzling.swift

@@ -19,7 +19,6 @@ struct AdvancedSettingsPane: View {
         IceForm {
             CaptureInspectorSection()
             IceSection("Menu Bar Search") {
-                searchSectionOrdering
                 moveCursorToRevealedItem
                 surfaceItemsSeekingAttention
             }
@@ -39,9 +38,6 @@ struct AdvancedSettingsPane: View {
                 hideApplicationMenus
                 autoZenWhileSharingScreen
                 enableSecondaryContextMenu
-                if settings.enableSecondaryContextMenu {
-                    enableSecondaryContextMenuQuit
-                }
             }
             IceSection("Permissions") {
                 allPermissions
@@ -69,11 +65,13 @@ struct AdvancedSettingsPane: View {
 
             Spacer()
 
-            Button(String(localized: "Reset \(Constants.displayName)", comment: "A button that resets all settings to defaults")) {
+            Button(
+                String(localized: "Reset \(Constants.displayName)", comment: "A button that resets all settings to defaults"),
+                role: .destructive
+            ) {
                 isConfirmingReset = true
             }
-            .buttonStyle(.bordered)
-            .tint(.red)
+            .buttonStyle(.thawSecondary)
         }
         .alert(String(localized: "Reset all settings?"), isPresented: $isConfirmingReset) {
             Button(String(localized: "Reset"), role: .destructive) {
@@ -151,6 +149,7 @@ struct AdvancedSettingsPane: View {
                         let url = DiagnosticLogger.shared.logDirectory
                         NSWorkspace.shared.open(url)
                     }
+                    .buttonStyle(.thawSecondary)
                 }
 
                 if let currentLogFileName {
@@ -214,70 +213,6 @@ struct AdvancedSettingsPane: View {
     private static let logSizeBounds = NumberBounds(1 ... 100)
     private static let logRetentionBounds = NumberBounds(1 ... 30)
 
-    private var displayedSearchSectionNames: [MenuBarSection.Name] {
-        settings.searchSectionOrder.filter { name in
-            name != .alwaysHidden || settings.enableAlwaysHiddenSection
-        }
-    }
-
-    private var searchSectionOrdering: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(Array(displayedSearchSectionNames.enumerated()), id: \.element) { index, name in
-                searchSectionRow(for: name)
-                if index < displayedSearchSectionNames.count - 1 {
-                    Divider()
-                }
-            }
-        }
-        .animation(.default, value: settings.searchSectionOrder)
-        .animation(.default, value: settings.enableAlwaysHiddenSection)
-        .annotation(
-            "Choose which menu bar sections appear in the search panel, and in what order. Use the up and down buttons to reorder, and turn off a section to exclude its items from search results.",
-            spacing: 10
-        )
-    }
-
-    @ViewBuilder
-    private func searchSectionRow(for name: MenuBarSection.Name) -> some View {
-        let displayed = displayedSearchSectionNames
-        let position = displayed.firstIndex(of: name) ?? 0
-        let isFirst = position == 0
-        let isLast = position == displayed.count - 1
-        HStack(spacing: 8) {
-            Text(name.localized)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            Button {
-                moveSearchSection(name, by: -1)
-            } label: {
-                Image(systemName: "chevron.up")
-            }
-            .buttonStyle(.borderless)
-            .disabled(isFirst)
-            .accessibilityLabel(String(localized: "Move up"))
-            Button {
-                moveSearchSection(name, by: 1)
-            } label: {
-                Image(systemName: "chevron.down")
-            }
-            .buttonStyle(.borderless)
-            .disabled(isLast)
-            .accessibilityLabel(String(localized: "Move down"))
-            Toggle(name.localized, isOn: searchInclusionBinding(for: name))
-                .labelsHidden()
-        }
-    }
-
-    private func searchInclusionBinding(for name: MenuBarSection.Name) -> Binding<Bool> {
-        switch name {
-        case .visible:
-            return $settings.searchIncludeVisible
-        case .hidden:
-            return $settings.searchIncludeHidden
-        case .alwaysHidden:
-            return $settings.searchIncludeAlwaysHidden
-        }
-    }
-
     private var surfaceItemsSeekingAttention: some View {
         Toggle(
             "Surface hidden items that ask for attention",
@@ -307,29 +242,6 @@ struct AdvancedSettingsPane: View {
         )
     }
 
-    private func moveSearchSection(_ name: MenuBarSection.Name, by offset: Int) {
-        // Swap by the user-visible neighbour so the move is predictable when
-        // the always-hidden row is conditionally hidden from this list.
-        let displayed = displayedSearchSectionNames
-        guard let displayIndex = displayed.firstIndex(of: name) else {
-            return
-        }
-        let displayTarget = displayIndex + offset
-        guard displayed.indices.contains(displayTarget) else {
-            return
-        }
-        let other = displayed[displayTarget]
-        guard
-            let index = settings.searchSectionOrder.firstIndex(of: name),
-            let otherIndex = settings.searchSectionOrder.firstIndex(of: other)
-        else {
-            return
-        }
-        var order = settings.searchSectionOrder
-        order.swapAt(index, otherIndex)
-        settings.searchSectionOrder = order
-    }
-
     private var hideApplicationMenus: some View {
         Toggle(
             "Hide app menus when showing menu bar items",
@@ -356,23 +268,8 @@ struct AdvancedSettingsPane: View {
             Text(
                 """
                 Right-click in an empty area of the menu bar to display a minimal \
-                version of \(Constants.displayName)'s menu. Disable this setting if you encounter conflicts \
-                with other apps.
-                """
-            )
-            .padding(.trailing, 75)
-        }
-    }
-
-    private var enableSecondaryContextMenuQuit: some View {
-        Toggle(
-            "Enable secondary context menu quit",
-            isOn: $settings.enableSecondaryContextMenuQuit
-        )
-        .annotation {
-            Text(
-                """
-                Add a Quit \(Constants.displayName) item to the bottom of the secondary context menu.
+                version of \(Constants.displayName)'s menu, with Quit at the bottom. Disable this setting \
+                if you encounter conflicts with other apps.
                 """
             )
             .padding(.trailing, 75)
@@ -434,6 +331,7 @@ struct AdvancedSettingsPane: View {
                     Button("Grant Permission") {
                         permission.performRequest()
                     }
+                    .buttonStyle(.thawSecondary)
                 }
             } label: {
                 Text(permission.title)

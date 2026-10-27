@@ -107,11 +107,11 @@ private struct MenuBarLayoutEditorContentView: View {
             itemManager: appState.itemManager,
             advancedSettings: appState.settings.advanced
         )
-        .scrollEdgeEffectStyle(.automatic, for: .vertical)
-        .safeAreaBar(edge: .top, spacing: 0) {
+        .thawScrollEdgeEffect(.automatic, for: .vertical)
+        .thawSafeAreaBar(edge: .top, spacing: 0) {
             panelHeading
         }
-        .safeAreaBar(edge: .bottom, spacing: 0) {
+        .thawSafeAreaBar(edge: .bottom, spacing: 0) {
             panelBottomBar
         }
         .environment(appState)
@@ -130,6 +130,7 @@ private struct MenuBarLayoutEditorContentView: View {
             Button("Done") {
                 onDone?()
             }
+            .buttonStyle(.thawPrimary)
             // The popover is semitransient, so Escape doesn't dismiss it;
             // without a shortcut a keyboard-only user can't close the editor.
             .keyboardShortcut(.defaultAction)
