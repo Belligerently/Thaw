@@ -837,6 +837,12 @@ final class ProfileManager {
     /// other profile that previously held it (enforces uniqueness), and
     /// caches a user-supplied label for display.
     func setAssociatedSpace(key: String?, spaceName: String? = nil, forProfileID profileID: UUID) {
+        assignSpace(key: key, spaceName: spaceName, toProfileID: profileID)
+        saveManifest()
+    }
+
+    /// setAssociatedSpace without the save, so an import writes the manifest once.
+    private func assignSpace(key: String?, spaceName: String?, toProfileID profileID: UUID) {
         if let key {
             for index in profiles.indices where profiles[index].associatedSpaceKey == key {
                 profiles[index].associatedSpaceKey = nil
@@ -847,7 +853,6 @@ final class ProfileManager {
             profiles[index].associatedSpaceKey = key
             profiles[index].associatedSpaceName = key != nil ? spaceName : nil
         }
-        saveManifest()
     }
 
     /// Returns the profile associated with the given Space key, if any.
@@ -861,6 +866,12 @@ final class ProfileManager {
     /// other profile that previously had it (enforces uniqueness).
     /// Also caches the display name so it can be shown when disconnected.
     func setAssociatedDisplay(uuid: String?, displayName: String? = nil, forProfileID profileID: UUID) {
+        assignDisplay(uuid: uuid, displayName: displayName, toProfileID: profileID)
+        saveManifest()
+    }
+
+    /// setAssociatedDisplay without the save, so an import writes the manifest once.
+    private func assignDisplay(uuid: String?, displayName: String?, toProfileID profileID: UUID) {
         if let uuid {
             for index in profiles.indices where profiles[index].associatedDisplayUUID == uuid {
                 profiles[index].associatedDisplayUUID = nil
@@ -871,7 +882,6 @@ final class ProfileManager {
             profiles[index].associatedDisplayUUID = uuid
             profiles[index].associatedDisplayName = uuid != nil ? displayName : nil
         }
-        saveManifest()
     }
 
     /// Clears the display association from whichever profile currently holds it.
@@ -887,11 +897,14 @@ final class ProfileManager {
     func importProfile(from url: URL) throws {
         let data = try Data(contentsOf: url)
         let bundle = try decoder.decode(ProfileExportBundle.self, from: data)
+        try ProfileImportPolicy.validate(bundle)
+        // Saved on every exit, so a write that fails part-way doesn't orphan the profiles before it.
+        defer { saveManifest() }
 
         for entry in bundle.entries {
             let imported = Profile(
                 name: entry.profile.name,
-                content: entry.profile.content
+                content: ProfileImportPolicy.sanitized(entry.profile.content)
             )
 
             let importedData = try encoder.encode(imported)
@@ -911,10 +924,10 @@ final class ProfileManager {
             // Reconcile display ownership through the setter so any existing
             // profile that owns this display has its association cleared first.
             if let displayUUID = entry.associatedDisplayUUID {
-                setAssociatedDisplay(
+                assignDisplay(
                     uuid: displayUUID,
                     displayName: entry.associatedDisplayName,
-                    forProfileID: imported.id
+                    toProfileID: imported.id
                 )
             }
 
@@ -922,13 +935,12 @@ final class ProfileManager {
             // from another Mac will not match any local Space, so it sits
             // inert rather than binding the profile to the wrong desktop.
             if let spaceKey = entry.associatedSpaceKey {
-                setAssociatedSpace(
+                assignSpace(
                     key: spaceKey,
                     spaceName: entry.associatedSpaceName,
-                    forProfileID: imported.id
+                    toProfileID: imported.id
                 )
             }
         }
-        saveManifest()
     }
 }

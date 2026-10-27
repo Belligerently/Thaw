@@ -121,7 +121,8 @@ final class MenuBarItemManager {
     ///
     /// - Parameters:
     ///   - dividerWidth: Width of the section's control item.
-    ///   - isSectionCollapsed: Whether the section's logical state is hidden.
+    ///   - isSectionCollapsed: Whether the section's control item is in its
+    ///     hide state, which sets the divider's length.
     ///
     /// - Returns: true when geometry and logical state disagree.
     static nonisolated func isMidSectionTransition(
@@ -148,6 +149,17 @@ final class MenuBarItemManager {
     /// How many consecutive passes may be discarded as mid expand/collapse
     /// before one is accepted regardless.
     static let maxMidTransitionSkips = 3
+
+    /// Bumped each time an apply schedules its post-apply cache refresh, so a
+    /// cache pass that handed its publish to the apply can tell whether one
+    /// is coming.
+    var deferredCacheRefreshCount = 0
+
+    /// The running refresh after a mid expand/collapse discard, if any.
+    var midTransitionRetryTask: Task<Void, Never>?
+
+    /// The merged flags of the requests that running refresh serves.
+    var midTransitionRetryFlags: MidTransitionRetryFlags?
 
     /// How many cache cycles a windowID stays eligible as "recently seen".
     static let recentWindowIDCycleWindow = 10
@@ -1795,7 +1807,7 @@ final class MenuBarItemManager {
         // costs a plist write and a move batch.
         groupOrderObservationTask?.cancel()
         groupOrderObservationTask = Task { [weak self, weak appState] in
-            let changes = Observations { [weak appState] in
+            let changes = observedValues { [weak appState] in
                 appState?.itemGroupManager.groupSet
             }
             var isFirst = true
@@ -1884,7 +1896,7 @@ final class MenuBarItemManager {
         // presented, via either property changing.
         navigationStateObservationTask = Task { [weak self] in
             guard let appState = self?.appState else { return }
-            let changes = Observations { [weak navigationState = appState.navigationState] in
+            let changes = observedValues { [weak navigationState = appState.navigationState] in
                 (navigationState?.settingsNavigationIdentifier, navigationState?.isSettingsPresented)
             }
             for await (identifier, isPresented) in changes {

@@ -202,6 +202,7 @@ extension MenuBarCaptureService {
                 self.onInvalidate = onInvalidate
             }
 
+            @available(macOS 26.0, *)
             func getSession() throws -> XPCSession {
                 if let session = slot.withLock({ $0.session }) {
                     return session
@@ -252,6 +253,8 @@ extension MenuBarCaptureService {
         }
 
         private let storage: OSAllocatedUnfairLock<Storage>
+        /// Stands in for XPCSession before macOS 26, which can't require a same-team peer.
+        private let legacyConnection: LegacyXPCConnection
         private let diagLog: DiagLog
 
         init(
@@ -262,6 +265,13 @@ extension MenuBarCaptureService {
             self.storage = OSAllocatedUnfairLock(
                 initialState: Storage(queue: queue, diagLog: diagLog, onInvalidate: onInvalidate)
             )
+            self.legacyConnection = LegacyXPCConnection(
+                serviceName: MenuBarCaptureService.name,
+                queue: queue,
+                teamIdentifier: CodeSigningInfo.processTeamIdentifier,
+                diagLog: diagLog,
+                onInvalidate: onInvalidate
+            )
             self.diagLog = diagLog
         }
 
@@ -271,9 +281,13 @@ extension MenuBarCaptureService {
 
         func cancel(reason: String) {
             storage.withLock { $0.cancel(reason: reason) }
+            legacyConnection.cancel()
         }
 
         func sendAsync(request: Request) async -> Response? {
+            guard #available(macOS 26.0, *) else {
+                return await legacyConnection.send(request, as: Response.self)
+            }
             let xpcSession: XPCSession
             do {
                 xpcSession = try storage.withLock { try $0.getSession() }

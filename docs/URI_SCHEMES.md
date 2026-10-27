@@ -13,7 +13,7 @@ Thaw registers the `thaw://` scheme in `Info.plist` (`CFBundleURLTypes`).
 | `thaw://toggle-hidden`            | Toggle Hidden Section | Shows/hides the hidden menu bar section  |
 | `thaw://toggle-always-hidden`     | Toggle Always-Hidden  | Shows/hides the always-hidden section    |
 | `thaw://search`                   | Open Search Panel     | Displays the menu bar item search panel  |
-| `thaw://toggle-thawbar`           | Toggle Thaw Bar       | Toggles the Thaw Bar on the active display |
+| `thaw://toggle-thawbar`           | Toggle Thaw Bar       | Toggles the Thaw Bar on the active display and saves it, so it needs Settings URI turned on and an approved sender (see Security Model) |
 | `thaw://toggle-application-menus` | Toggle App Menus      | Shows/hides application menus            |
 | `thaw://open-settings`            | Open Settings         | Opens the Thaw settings window           |
 | `thaw://authorize`                | Authorize App         | Triggers auth dialog to grant an app whitelist access to settings |
@@ -95,28 +95,21 @@ Read and write Thaw settings via `thaw://` URLs, gated by a security whitelist. 
 | ----------------------------------------- | ---- | -------------------------------------------- |
 | `autoRehide`                              | Bool | Auto-rehide hidden items after interval      |
 | `showOnClick`                             | Bool | Show hidden items when clicking the menu bar |
-| `showOnDoubleClick`                       | Bool | Show hidden items on double-click            |
+| `showOnDoubleClick`                       | Bool | Double-click shows always-hidden items       |
 | `showOnHover`                             | Bool | Show hidden items on hover                   |
 | `showOnScroll`                            | Bool | Show hidden items on scroll                  |
 | `useIceBarOnlyOnNotchedDisplay`           | Bool | Thaw Bar only on Macs with notch             |
 | `hideApplicationMenus`                    | Bool | Hide application menu titles                 |
 | `enableAlwaysHiddenSection`               | Bool | Enable the always-hidden section             |
-| `useOptionClickToShowAlwaysHiddenSection` | Bool | Option-click shows always-hidden items       |
-| `useDoubleClickToShowAlwaysHiddenSection` | Bool | Double-click Thaw icon shows always-hidden   |
 | `enableSecondaryContextMenu`              | Bool | Right-click shows alternate menu             |
-| `showAllSectionsOnUserDrag`               | Bool | Reveal all sections during drag              |
 | `showMenuBarTooltips`                     | Bool | Show hover tooltips on menu bar items        |
 | `enableDiagnosticLogging`                 | Bool | Enable debug logging                         |
 | `customIceIconIsTemplate`                 | Bool | Custom icon renders as template              |
 | `showIceIcon`                             | Bool | Show the Thaw icon in menu bar               |
-| `hideDockIconWhenToggling`                | Bool | Hide Dock icon on menu-bar toggle; overflow uses Thaw Bar |
 | `iceBarLocationOnHotkey`                  | Bool | Thaw Bar appears at mouse location on hotkey     |
 | `enableMenuBarItemOverflow`                | Bool | Eject items that would fall behind the notch |
 | `useThawBarOnNotchOverflow`                | Bool | Send ejected overflow items to the Thaw Bar  |
 | `moveCursorToRevealedItem`                 | Bool | Move the cursor onto an item once revealed   |
-| `searchIncludeVisible`                     | Bool | Include visible items in search results      |
-| `searchIncludeHidden`                      | Bool | Include hidden items in search results       |
-| `searchIncludeAlwaysHidden`                | Bool | Include always-hidden items in search        |
 
 #### Double/Time Interval Settings
 

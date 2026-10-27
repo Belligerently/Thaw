@@ -401,7 +401,6 @@ final class HIDEventManager {
             alwaysHiddenSection.show()
             guardMouseUpState = .swallowingThenDisarm
         } else if event.flags.contains(.maskAlternate),
-                  appState.settings.advanced.useOptionClickToShowAlwaysHiddenSection,
                   let alwaysHiddenSection = appState.menuBarManager.section(withName: .alwaysHidden),
                   alwaysHiddenSection.isEnabled
         {
@@ -523,7 +522,7 @@ final class HIDEventManager {
             let advancedSettings = appState.settings.advanced
             let displaySettings = appState.settings.displaySettings
             hoverSettingsObservationTask = Task { [weak self] in
-                let changes = Observations {
+                let changes = observedValues {
                     (generalSettings.showOnHover, advancedSettings.showMenuBarTooltips, displaySettings.configurations)
                 }
                 for await (showOnHover, _, _) in changes {
@@ -572,7 +571,7 @@ final class HIDEventManager {
             let itemManagerForWindowBounds = appState.itemManager
             itemCacheWindowBoundsObservationTask = Task { [weak self] in
                 var previous: MenuBarItemManager.ItemCache?
-                let changes = Observations { itemManagerForWindowBounds.itemCache }
+                let changes = observedValues { itemManagerForWindowBounds.itemCache }
                 for await cache in changes {
                     guard let self else { return }
                     guard cache != previous else { continue }
@@ -830,8 +829,7 @@ extension HIDEventManager {
             }
 
             if modifierFlags.contains(.option) {
-                if appState.settings.advanced.useOptionClickToShowAlwaysHiddenSection,
-                   let alwaysHiddenSection = appState.menuBarManager.section(withName: .alwaysHidden),
+                if let alwaysHiddenSection = appState.menuBarManager.section(withName: .alwaysHidden),
                    alwaysHiddenSection.isEnabled
                 {
                     Task { alwaysHiddenSection.toggle() }
@@ -1306,10 +1304,8 @@ extension HIDEventManager {
 
         isDraggingMenuBarItem = true
 
-        if appState.settings.advanced.showAllSectionsOnUserDrag {
-            for section in appState.menuBarManager.sections {
-                section.controlItem.state = .showSection
-            }
+        for section in appState.menuBarManager.sections {
+            section.controlItem.state = .showSection
         }
     }
 

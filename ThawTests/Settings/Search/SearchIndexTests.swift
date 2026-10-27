@@ -30,17 +30,34 @@ struct SearchIndexTests {
         #expect(!SearchIndex.entries.isEmpty)
     }
 
-    @Test("The hide-Dock-icon-when-toggling row is indexed")
-    func hideDockIconWhenTogglingIsSearchable() {
-        let entry = SearchIndex.entries.first { $0.id == "general.hideDockIconWhenToggling" }
+    @Test("The show-Dock-icon-with-Settings row is indexed")
+    func showDockIconWithSettingsIsSearchable() {
+        let entry = SearchIndex.entries.first { $0.id == "general.showDockIconWithSettings" }
 
-        #expect(entry?.property == .general("hideDockIconWhenToggling"))
-        #expect(entry?.titleText == "Hide Dock icon when toggling the menu bar")
-        #expect(
-            entry?.descriptionText
-                == "Keep the app's icon out of the Dock when showing or hiding hidden menu bar items. If they need extra space, they open in the Thaw Bar instead of hiding the app menus. Settings windows still appear normally."
-        )
-        #expect(entry?.pane == .general)
+        #expect(entry?.property == .general("showDockIconWithSettings"))
+        #expect(entry?.titleText == "Show Dock icon while Settings is open")
+        #expect(entry?.keywords.contains("recent apps") == true)
+    }
+
+    @Test("Options the app now decides itself are not indexed")
+    func removedOptionsAreNotSearchable() {
+        let removed: Set = [
+            "general.hideDockIconWhenToggling",
+            "advanced.useOptionClickToShowAlwaysHiddenSection",
+            "advanced.useDoubleClickToShowAlwaysHiddenSection",
+            "advanced.showAllSectionsOnUserDrag",
+            "advanced.enableSecondaryContextMenuQuit",
+        ]
+
+        #expect(SearchIndex.entries.filter { removed.contains($0.id) }.isEmpty)
+    }
+
+    @Test("One double-click row covers the icon and the empty menu bar")
+    func doubleClickRowCoversBoth() {
+        let entry = SearchIndex.entries.first { $0.id == "general.showOnDoubleClick" }
+
+        #expect(entry?.titleText == "Double-click to open always-hidden section")
+        #expect(entry?.descriptionText?.contains("Option-click") == true)
     }
 
     // MARK: - entries(for:)

@@ -70,11 +70,6 @@ final class MenuBarManager {
     /// Task observing `itemManager.itemCache`, debounced with AsyncAlgorithms.
     private var itemCacheHotkeyObservationTask: Task<Void, Never>?
 
-    /// Task observing ``GeneralSettings/hideDockIconWhenToggling`` so an
-    /// automatic hide already in flight can be reconciled when the setting
-    /// turns on.
-    private var hideDockIconWhenTogglingObservationTask: Task<Void, Never>?
-
     @MainActor
     deinit {
         displayConfigurationsObservationTask?.cancel()
@@ -82,7 +77,6 @@ final class MenuBarManager {
         settingsWindowVisibilityCancellable?.cancel()
         appearanceConfigurationObservationTask?.cancel()
         itemCacheHotkeyObservationTask?.cancel()
-        hideDockIconWhenTogglingObservationTask?.cancel()
         attentionObservationTask?.cancel()
     }
 
@@ -193,8 +187,6 @@ final class MenuBarManager {
     private func configureCancellables() {
         averageColorRefreshCancellable?.cancel()
         averageColorRefreshCancellable = nil
-        hideDockIconWhenTogglingObservationTask?.cancel()
-        hideDockIconWhenTogglingObservationTask = nil
         var c = Set<AnyCancellable>()
 
         NSApp.publisher(for: \.currentSystemPresentationOptions)
@@ -291,7 +283,7 @@ final class MenuBarManager {
         if let appState {
             let displaySettings = appState.settings.displaySettings
             displayConfigurationsObservationTask = Task { [weak self] in
-                let changes = Observations { displaySettings.configurations }
+                let changes = observedValues { displaySettings.configurations }
                 for await _ in changes {
                     guard let self else { return }
                     updateControlItemStates()
@@ -302,25 +294,16 @@ final class MenuBarManager {
             // Debounced to avoid churning registrations on every cache tick.
             let itemManager = appState.itemManager
             itemCacheHotkeyObservationTask = Task { [weak self] in
-                let changes = Observations { itemManager.itemCache }
+                let changes = observedValues { itemManager.itemCache }
                 for await _ in changes.debounce(for: .seconds(0.5)) {
                     guard let self else { return }
                     rebuildItemHotkeys()
                 }
             }
-
-            let general = appState.settings.general
-            hideDockIconWhenTogglingObservationTask = Task { [weak self] in
-                let changes = Observations { general.hideDockIconWhenToggling }
-                for await hideDockIcon in changes {
-                    guard let self else { return }
-                    reconcileAutomaticApplicationMenuHide(hideDockIconWhenToggling: hideDockIcon)
-                }
-            }
         }
 
         settingsWindowObservationTask = Task { [weak self] in
-            let changes = Observations { self?.settingsWindow }
+            let changes = observedValues { self?.settingsWindow }
             for await window in changes {
                 guard let self else { return }
                 guard let window else { continue }
@@ -448,7 +431,7 @@ final class MenuBarManager {
             appearanceConfigurationObservationTask = Task { [weak self, weak appState] in
                 var previousRequirements: AdaptiveCaptureRequirements?
                 // Effective configuration, so the gates follow per-Space overrides.
-                let changes = Observations { appState?.appearanceManager.effectiveConfiguration }
+                let changes = observedValues { appState?.appearanceManager.effectiveConfiguration }
                 for await config in changes {
                     guard let self else { return }
                     guard let config else { continue }
@@ -489,7 +472,7 @@ final class MenuBarManager {
             attentionObservationTask?.cancel()
             attentionObservationTask = Task { [weak self, weak appState] in
                 var previous: Set<MenuBarItemTag> = []
-                let changes = Observations { appState?.imageCache.tagsSeekingAttention }
+                let changes = observedValues { appState?.imageCache.tagsSeekingAttention }
                 for await tags in changes {
                     guard let self, let appState, let tags else { continue }
                     defer { previous = tags }
@@ -536,7 +519,7 @@ final class MenuBarManager {
                 guard
                     MenuBarSection.allowsHidingApplicationMenus(
                         hideApplicationMenus: appState.settings.advanced.hideApplicationMenus,
-                        hideDockIconWhenToggling: appState.settings.general.hideDockIconWhenToggling
+                        hideDockIconWhenToggling: false
                     ),
                     !appState.settings.displaySettings.configurationForActiveDisplay().useIceBar,
                     !isMenuBarHiddenBySystem,
@@ -923,30 +906,28 @@ final class MenuBarManager {
         settingsItem.image = NSImage(systemSymbolName: "gear", accessibilityDescription: "Settings")
         menu.addItem(settingsItem)
 
-        if appState?.settings.advanced.enableSecondaryContextMenuQuit == true {
-            menu.addItem(.separator())
+        menu.addItem(.separator())
 
-            let quitItem = NSMenuItem(
-                title: String(localized: "Quit \(Constants.displayName)"),
-                action: #selector(quitFromSecondaryContextMenu),
-                keyEquivalent: "q"
-            )
-            quitItem.keyEquivalentModifierMask = .command
-            quitItem.target = self
-            quitItem.image = NSImage(systemSymbolName: "power", accessibilityDescription: "Quit")
-            menu.addItem(quitItem)
+        let quitItem = NSMenuItem(
+            title: String(localized: "Quit \(Constants.displayName)"),
+            action: #selector(quitFromSecondaryContextMenu),
+            keyEquivalent: "q"
+        )
+        quitItem.keyEquivalentModifierMask = .command
+        quitItem.target = self
+        quitItem.image = NSImage(systemSymbolName: "power", accessibilityDescription: "Quit")
+        menu.addItem(quitItem)
 
-            let restartItem = NSMenuItem(
-                title: String(localized: "Restart \(Constants.displayName)"),
-                action: #selector(restartFromSecondaryContextMenu),
-                keyEquivalent: "q"
-            )
-            restartItem.keyEquivalentModifierMask = [.command, .option]
-            restartItem.isAlternate = true
-            restartItem.target = self
-            restartItem.image = NSImage(systemSymbolName: "arrow.counterclockwise", accessibilityDescription: "Restart")
-            menu.addItem(restartItem)
-        }
+        let restartItem = NSMenuItem(
+            title: String(localized: "Restart \(Constants.displayName)"),
+            action: #selector(restartFromSecondaryContextMenu),
+            keyEquivalent: "q"
+        )
+        restartItem.keyEquivalentModifierMask = [.command, .option]
+        restartItem.isAlternate = true
+        restartItem.target = self
+        restartItem.image = NSImage(systemSymbolName: "arrow.counterclockwise", accessibilityDescription: "Restart")
+        menu.addItem(restartItem)
 
         menu.popUp(positioning: nil, at: point, in: nil)
     }
@@ -1062,7 +1043,7 @@ final class MenuBarManager {
         }
 
         cancelHideApplicationMenusActivationTask()
-        let hideDockIcon = appState.settings.general.hideDockIconWhenToggling
+        let hideDockIcon = false
         let policy = Self.activationPolicyForHidingApplicationMenus(
             hideDockIconWhenToggling: hideDockIcon,
             explicitUIWantsRegularActivation: explicitUIWantsRegularActivation(
@@ -1079,7 +1060,7 @@ final class MenuBarManager {
             // The first activation after a policy change can be ignored.
             try? await Task.sleep(for: .milliseconds(25))
             guard !Task.isCancelled, isHidingApplicationMenus else { return }
-            let retryHideDockIcon = appState.settings.general.hideDockIconWhenToggling
+            let retryHideDockIcon = false
             let retryPolicy = Self.activationPolicyForHidingApplicationMenus(
                 hideDockIconWhenToggling: retryHideDockIcon,
                 explicitUIWantsRegularActivation: explicitUIWantsRegularActivation(
@@ -1109,27 +1090,6 @@ final class MenuBarManager {
             showApplicationMenus()
         } else {
             hideApplicationMenus(manual: true)
-        }
-    }
-
-    /// Clears an in-flight automatic hide when the Dock-icon setting turns on.
-    private func reconcileAutomaticApplicationMenuHide(hideDockIconWhenToggling: Bool) {
-        switch Self.automaticHideReconcileAction(
-            hideDockIconWhenToggling: hideDockIconWhenToggling,
-            isHidingApplicationMenus: isHidingApplicationMenus,
-            isManuallyHidingApplicationMenus: isManuallyHidingApplicationMenus,
-            explicitUIWantsRegularActivation: explicitUIWantsRegularActivation(
-                hideDockIconWhenToggling: hideDockIconWhenToggling
-            )
-        ) {
-        case .none:
-            return
-        case .restoreApplicationMenus:
-            showApplicationMenus()
-        case .clearAutomaticHideState:
-            cancelHideApplicationMenusActivationTask()
-            isHidingApplicationMenus = false
-            isManuallyHidingApplicationMenus = false
         }
     }
 

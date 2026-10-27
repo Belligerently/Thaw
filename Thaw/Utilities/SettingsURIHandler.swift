@@ -29,12 +29,9 @@ enum SettingsURIHandler {
         "showOnScroll",
         "useIceBarOnlyOnNotchedDisplay",
         "hideApplicationMenus",
-        "hideDockIconWhenToggling",
+        "showDockIconWithSettings",
         "enableAlwaysHiddenSection",
-        "useOptionClickToShowAlwaysHiddenSection",
-        "useDoubleClickToShowAlwaysHiddenSection",
         "enableSecondaryContextMenu",
-        "showAllSectionsOnUserDrag",
         "showMenuBarTooltips",
         "enableDiagnosticLogging",
         "customIceIconIsTemplate",
@@ -42,9 +39,6 @@ enum SettingsURIHandler {
         "iceBarLocationOnHotkey",
         "enableMenuBarItemOverflow",
         "useThawBarOnNotchOverflow",
-        "searchIncludeVisible",
-        "searchIncludeHidden",
-        "searchIncludeAlwaysHidden",
         "moveCursorToRevealedItem",
     ]
 
@@ -81,12 +75,9 @@ enum SettingsURIHandler {
         "showOnScroll": .showOnScroll,
         "useIceBarOnlyOnNotchedDisplay": .useIceBarOnlyOnNotchedDisplay,
         "hideApplicationMenus": .hideApplicationMenus,
-        "hideDockIconWhenToggling": .hideDockIconWhenToggling,
+        "showDockIconWithSettings": .showDockIconWithSettings,
         "enableAlwaysHiddenSection": .enableAlwaysHiddenSection,
-        "useOptionClickToShowAlwaysHiddenSection": .useOptionClickToShowAlwaysHiddenSection,
-        "useDoubleClickToShowAlwaysHiddenSection": .useDoubleClickToShowAlwaysHiddenSection,
         "enableSecondaryContextMenu": .enableSecondaryContextMenu,
-        "showAllSectionsOnUserDrag": .showAllSectionsOnUserDrag,
         "showMenuBarTooltips": .showMenuBarTooltips,
         "enableDiagnosticLogging": .enableDiagnosticLogging,
         "customIceIconIsTemplate": .customIceIconIsTemplate,
@@ -94,9 +85,6 @@ enum SettingsURIHandler {
         "iceBarLocationOnHotkey": .iceBarLocationOnHotkey,
         "enableMenuBarItemOverflow": .enableMenuBarItemOverflow,
         "useThawBarOnNotchOverflow": .useThawBarOnNotchOverflow,
-        "searchIncludeVisible": .searchIncludeVisible,
-        "searchIncludeHidden": .searchIncludeHidden,
-        "searchIncludeAlwaysHidden": .searchIncludeAlwaysHidden,
         "moveCursorToRevealedItem": .moveCursorToRevealedItem,
         "rehideInterval": .rehideInterval,
         "tempShowInterval": .tempShowInterval,
@@ -122,7 +110,7 @@ enum SettingsURIHandler {
     /// A bare optional cannot tell an app that is validly signed without a team
     /// from an app that could not be located or inspected at all, and those two
     /// must not be treated alike when verifying a whitelist entry.
-    enum TeamIdentifierLookup: Equatable {
+    nonisolated enum TeamIdentifierLookup: Equatable, Sendable {
         /// The app resolved and its signature names this team identifier.
         case team(String)
 
@@ -178,8 +166,15 @@ enum SettingsURIHandler {
     }
 
     /// Verifies that an app's current code signature matches the stored signing identity.
-    private static func verifyCodeSignature(bundleId: String, storedTeamId: String?) -> Bool {
-        let lookup = lookUpTeamIdentifier(for: bundleId)
+    ///
+    /// lookup is the sending process's own signature when known; otherwise the app
+    /// installed under bundleId is read.
+    private static func verifyCodeSignature(
+        bundleId: String,
+        storedTeamId: String?,
+        lookup senderLookup: TeamIdentifierLookup? = nil
+    ) -> Bool {
+        let lookup = senderLookup ?? lookUpTeamIdentifier(for: bundleId)
 
         // If no stored team ID, only allow if app is also unsigned (legacy entries)
         guard let storedTeamId else {
@@ -223,7 +218,13 @@ enum SettingsURIHandler {
     }
 
     /// Checks if the sender is in the whitelist and has valid code signature.
-    static func isWhitelisted(bundleIdentifier: String?) -> Bool {
+    ///
+    /// Pass senderIdentity, read from the sending process, so the check covers the
+    /// sender's own code rather than whichever app is installed under the bundle ID.
+    static func isWhitelisted(
+        bundleIdentifier: String?,
+        senderIdentity: TeamIdentifierLookup? = nil
+    ) -> Bool {
         guard let bundleId = bundleIdentifier, !bundleId.isEmpty else {
             diagLog.warning("Settings URI: No sender bundle ID provided")
             return false
@@ -238,7 +239,7 @@ enum SettingsURIHandler {
         let signingIdentities = getSigningIdentities()
         let storedTeamId = signingIdentities[bundleId]
 
-        guard verifyCodeSignature(bundleId: bundleId, storedTeamId: storedTeamId) else {
+        guard verifyCodeSignature(bundleId: bundleId, storedTeamId: storedTeamId, lookup: senderIdentity) else {
             diagLog.warning("Settings URI: Code signature mismatch for \(bundleId)")
             return false
         }
@@ -249,9 +250,16 @@ enum SettingsURIHandler {
 
     /// Shows NSAlert confirmation dialog for first-time authorization.
     /// Returns true if user approves, false otherwise.
-    static func promptForAuthorization(bundleId: String) -> Bool {
-        let appName = getAppName(for: bundleId) ?? bundleId
-        let teamId = getTeamIdentifier(for: bundleId)
+    ///
+    /// Pass senderName, read from the sender's own signature, so an app claiming another
+    /// app's bundle ID isn't shown under that app's name.
+    static func promptForAuthorization(
+        bundleId: String,
+        senderIdentity: TeamIdentifierLookup? = nil,
+        senderName: String? = nil
+    ) -> Bool {
+        let appName = senderName ?? getAppName(for: bundleId) ?? bundleId
+        let teamId = senderIdentity.map(\.teamIdentifier) ?? getTeamIdentifier(for: bundleId)
 
         let alert = NSAlert()
         alert.messageText = String(localized: "Allow \"\(appName)\" to control \(Constants.displayName) settings?")
@@ -650,6 +658,20 @@ enum SettingsURIHandler {
         }
     }
 
+    /// Shipped values for boolean keys whose absence must not read as `false`.
+    private static let booleanDefaultsWhenAbsent: [Defaults.Key: Bool] = [
+        .showDockIconWithSettings: Defaults.DefaultValue.showDockIconWithSettings,
+    ]
+
+    /// The stored value of a boolean key, or its shipped default when the key
+    /// has never been written. `Defaults.bool` reads an absent key as `false`.
+    static func booleanValue(forKey key: Defaults.Key) -> Bool {
+        if Defaults.object(forKey: key) == nil, let fallback = booleanDefaultsWhenAbsent[key] {
+            return fallback
+        }
+        return Defaults.bool(forKey: key)
+    }
+
     /// Handles thaw://toggle?key=X URL.
     /// Returns true if setting was toggled successfully.
     static func handleToggle(key: String, sender: String?, displayUUID: String? = nil) -> Bool {
@@ -674,7 +696,7 @@ enum SettingsURIHandler {
             return false
         }
 
-        let currentValue = Defaults.bool(forKey: defaultsKey)
+        let currentValue = booleanValue(forKey: defaultsKey)
         let newValue = !currentValue
 
         Defaults.set(newValue, forKey: defaultsKey)
@@ -980,7 +1002,7 @@ enum SettingsURIHandler {
 
         if supportedBooleanKeys.contains(key) {
             guard let defaultsKey = keyMapping[key] else { return nil }
-            let value = Defaults.bool(forKey: defaultsKey)
+            let value = booleanValue(forKey: defaultsKey)
             return [
                 "value": value,
                 "type": "boolean",

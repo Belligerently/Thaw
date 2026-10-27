@@ -296,15 +296,15 @@ nonisolated enum SearchIndex {
             property: .general("showSettingDescriptions")
         ),
         SearchEntry(
-            id: "general.hideDockIconWhenToggling",
-            titleKey: "Hide Dock icon when toggling the menu bar",
-            titleText: "Hide Dock icon when toggling the menu bar",
-            descriptionText: "Keep the app's icon out of the Dock when showing or hiding hidden menu bar items. If they need extra space, they open in the Thaw Bar instead of hiding the app menus. Settings windows still appear normally.",
+            id: "general.showDockIconWithSettings",
+            titleKey: "Show Dock icon while Settings is open",
+            titleText: "Show Dock icon while Settings is open",
+            descriptionText: "Turn this off to keep Thaw out of the Dock and its recent apps when you open Settings and other windows. They still open in front and take keyboard focus. Hiding the app menus can still show the Dock icon.",
             pane: .general,
             sectionKey: nil,
             sectionText: nil,
-            keywords: ["dock", "icon", "hide", "toggle", "menu bar", "accessory", "thaw bar", "overflow"],
-            property: .general("hideDockIconWhenToggling")
+            keywords: ["dock", "icon", "settings", "recent apps", "accessory", "regular", "window"],
+            property: .general("showDockIconWithSettings")
         ),
         SearchEntry(
             id: "general.simpleMode",
@@ -379,12 +379,12 @@ nonisolated enum SearchIndex {
         ),
         SearchEntry(
             id: "general.showOnDoubleClick",
-            titleKey: "Double-click for always-hidden",
-            titleText: "Double-click for always-hidden",
-            descriptionText: "Double-click an empty area of the menu bar to show always-hidden menu bar items.",
+            titleKey: "Double-click to open always-hidden section",
+            titleText: "Double-click to open always-hidden section",
+            descriptionText: "Double-click the \(Constants.displayName) icon, or an empty area of the menu bar while Show on click is on. Option-click always opens it.",
             pane: .general,
-            sectionKey: "Empty menu bar area",
-            sectionText: "Empty menu bar area",
+            sectionKey: nil,
+            sectionText: nil,
             keywords: ["double click", "always hidden", "show"],
             property: .general("showOnDoubleClick")
         ),
@@ -455,39 +455,6 @@ nonisolated enum SearchIndex {
             property: .general("tempShowInterval")
         ),
         SearchEntry(
-            id: "advanced.useOptionClickToShowAlwaysHiddenSection",
-            titleKey: "Use Option-click to open always-hidden section",
-            titleText: "Use Option-click to open always-hidden section",
-            descriptionText: nil,
-            pane: .general,
-            sectionKey: "\(Constants.displayName) icon",
-            sectionText: "\(Constants.displayName) icon",
-            keywords: ["option", "click", "always hidden", "alt"],
-            property: .advanced("useOptionClickToShowAlwaysHiddenSection")
-        ),
-        SearchEntry(
-            id: "advanced.useDoubleClickToShowAlwaysHiddenSection",
-            titleKey: "Double-click \(Constants.displayName) icon to open always-hidden section",
-            titleText: "Double-click \(Constants.displayName) icon to open always-hidden section",
-            descriptionText: nil,
-            pane: .general,
-            sectionKey: "\(Constants.displayName) icon",
-            sectionText: "\(Constants.displayName) icon",
-            keywords: ["double click", "always hidden", "icon"],
-            property: .advanced("useDoubleClickToShowAlwaysHiddenSection")
-        ),
-        SearchEntry(
-            id: "advanced.showAllSectionsOnUserDrag",
-            titleKey: "Show all sections when ⌘ Command + dragging menu bar items",
-            titleText: "Show all sections when Command + dragging menu bar items",
-            descriptionText: nil,
-            pane: .general,
-            sectionKey: "While rearranging",
-            sectionText: "While rearranging",
-            keywords: ["drag", "command", "sections", "show all"],
-            property: .advanced("showAllSectionsOnUserDrag")
-        ),
-        SearchEntry(
             id: "advanced.showOnHoverDelay",
             titleKey: "Show on hover delay",
             titleText: "Show on hover delay",
@@ -503,50 +470,6 @@ nonisolated enum SearchIndex {
     // MARK: Advanced Settings
 
     private static let advancedEntries: [SearchEntry] = [
-        SearchEntry(
-            id: "advanced.searchSectionOrder",
-            titleKey: "Search section ordering",
-            titleText: "Search section ordering",
-            descriptionText: "Choose which menu bar sections appear in the search panel, and in what order.",
-            pane: .advanced,
-            sectionKey: "Menu Bar Search",
-            sectionText: "Menu Bar Search",
-            keywords: ["search", "section", "order", "panel", "reorder"],
-            property: .advanced("searchSectionOrder")
-        ),
-        SearchEntry(
-            id: "advanced.searchIncludeVisible",
-            titleKey: "Include visible section in search",
-            titleText: "Include visible section in search",
-            descriptionText: nil,
-            pane: .advanced,
-            sectionKey: "Menu Bar Search",
-            sectionText: "Menu Bar Search",
-            keywords: ["search", "visible", "include", "section"],
-            property: .advanced("searchIncludeVisible")
-        ),
-        SearchEntry(
-            id: "advanced.searchIncludeHidden",
-            titleKey: "Include hidden section in search",
-            titleText: "Include hidden section in search",
-            descriptionText: nil,
-            pane: .advanced,
-            sectionKey: "Menu Bar Search",
-            sectionText: "Menu Bar Search",
-            keywords: ["search", "hidden", "include", "section"],
-            property: .advanced("searchIncludeHidden")
-        ),
-        SearchEntry(
-            id: "advanced.searchIncludeAlwaysHidden",
-            titleKey: "Include always-hidden section in search",
-            titleText: "Include always-hidden section in search",
-            descriptionText: nil,
-            pane: .advanced,
-            sectionKey: "Menu Bar Search",
-            sectionText: "Menu Bar Search",
-            keywords: ["search", "always hidden", "include", "section"],
-            property: .advanced("searchIncludeAlwaysHidden")
-        ),
         SearchEntry(
             id: "advanced.moveCursorToRevealedItem",
             titleKey: "Move the pointer to revealed items",
@@ -652,17 +575,6 @@ nonisolated enum SearchIndex {
             property: .advanced("enableSecondaryContextMenu")
         ),
         SearchEntry(
-            id: "advanced.enableSecondaryContextMenuQuit",
-            titleKey: "Enable secondary context menu quit",
-            titleText: "Enable secondary context menu quit",
-            descriptionText: "Add a Quit \(Constants.displayName) item to the bottom of the secondary context menu.",
-            pane: .advanced,
-            sectionKey: "Menu bar behavior",
-            sectionText: "Menu bar behavior",
-            keywords: ["context menu", "quit", "secondary"],
-            property: .advanced("enableSecondaryContextMenuQuit")
-        ),
-        SearchEntry(
             id: "advanced.iconRefreshInterval",
             titleKey: "Icon refresh rate",
             titleText: "Icon refresh rate",
@@ -747,25 +659,14 @@ nonisolated enum SearchIndex {
             property: nil
         ),
         SearchEntry(
-            id: "displays.confirmSpacingRelaunch",
-            titleKey: "Confirm before relaunching apps",
-            titleText: "Confirm before relaunching apps",
-            descriptionText: "Before a display change or spacing edit relaunches your menu bar apps, \(Constants.displayName) asks you to confirm.",
-            pane: .displays,
-            sectionKey: nil,
-            sectionText: nil,
-            keywords: ["confirm", "relaunch", "apps", "spacing", "restart"],
-            property: nil
-        ),
-        SearchEntry(
             id: "displays.spacingApplyMode",
-            titleKey: "When applying spacing",
-            titleText: "When applying spacing",
-            descriptionText: "Choose whether spacing changes restart menu bar apps immediately or wait until the next restart. macOS only reads menu bar spacing when a status item's owner starts, so restarting apps applies the change now; waiting leaves every app running and the new spacing appears the next time each app starts.",
+            titleKey: "When spacing changes",
+            titleText: "When spacing changes",
+            descriptionText: "Ask before restarting menu bar apps, restart them right away, or wait until they restart. macOS only reads menu bar spacing when an app with a menu bar item starts.",
             pane: .displays,
             sectionKey: nil,
             sectionText: nil,
-            keywords: ["spacing", "relaunch", "restart", "apps", "disable", "without", "immediate", "next restart"],
+            keywords: ["spacing", "confirm", "relaunch", "restart", "apps", "ask", "wait", "next restart", "profile"],
             property: nil
         ),
     ]

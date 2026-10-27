@@ -55,7 +55,7 @@ final class MenuBarSearchPanel: NSPanel {
 
         if keyCode == .comma, modifiers.contains(.command), !modifiers.contains(.control), !modifiers.contains(.option), !modifiers.contains(.shift) {
             self?.close()
-            appState?.activate(withPolicy: .regular)
+            appState?.activateForUserWindow()
             appState?.openWindow(.settings)
             return nil
         }
@@ -448,15 +448,15 @@ private struct MenuBarSearchContentView: View {
 
     var body: some View {
         mainContent
-            .safeAreaBar(edge: .top, spacing: 0) {
+            .thawSafeAreaBar(edge: .top, spacing: 0) {
                 searchField
             }
-            .safeAreaBar(edge: .bottom, spacing: 0) {
+            .thawSafeAreaBar(edge: .bottom, spacing: 0) {
                 bottomBar
             }
-            .scrollEdgeEffectStyle(.automatic, for: .vertical)
+            .thawScrollEdgeEffect(.automatic, for: .vertical)
             .environment(\.menuBarSearchPanel, panel)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: ThawRadius.card, style: .continuous))
+            .thawGlass(in: RoundedRectangle(cornerRadius: ThawRadius.card, style: .continuous))
             .frame(width: 600, height: 400)
             .fixedSize()
             .onAppear {
@@ -478,22 +478,6 @@ private struct MenuBarSearchContentView: View {
                 if model.selection == nil {
                     selectFirstDisplayedItem()
                 }
-            }
-            .onChange(of: appState.settings.advanced.searchSectionOrder) {
-                updateDisplayedItems()
-                ensureValidSelection()
-            }
-            .onChange(of: appState.settings.advanced.searchIncludeVisible) {
-                updateDisplayedItems()
-                ensureValidSelection()
-            }
-            .onChange(of: appState.settings.advanced.searchIncludeHidden) {
-                updateDisplayedItems()
-                ensureValidSelection()
-            }
-            .onChange(of: appState.settings.advanced.searchIncludeAlwaysHidden) {
-                updateDisplayedItems()
-                ensureValidSelection()
             }
     }
 
@@ -529,7 +513,7 @@ private struct MenuBarSearchContentView: View {
     private func openPermissionsSettings() {
         closePanel()
         appState.navigationState.settingsNavigationIdentifier = .advanced
-        appState.activate(withPolicy: .regular)
+        appState.activateForUserWindow()
         appState.openWindow(.settings)
     }
 
@@ -560,7 +544,7 @@ private struct MenuBarSearchContentView: View {
         HStack {
             SettingsButton {
                 closePanel()
-                appState.activate(withPolicy: .regular)
+                appState.activateForUserWindow()
                 appState.openWindow(.settings)
             }
 
@@ -624,18 +608,9 @@ private struct MenuBarSearchContentView: View {
         }
         typealias ScoredItem = (listItem: ListItem, score: Double)
 
-        let advanced = appState.settings.advanced
-        let orderedNames = advanced.searchSectionOrder
-
-        let searchItems: [SearchItem] = orderedNames
+        // Every enabled section, in menu bar order.
+        let searchItems: [SearchItem] = MenuBarSection.Name.allCases
             .reduce(into: []) { items, name in
-                let included = switch name {
-                case .visible: advanced.searchIncludeVisible
-                case .hidden: advanced.searchIncludeHidden
-                case .alwaysHidden: advanced.searchIncludeAlwaysHidden
-                }
-                guard included else { return }
-
                 if
                     let section = appState.menuBarManager.section(
                         withName: name
@@ -736,7 +711,7 @@ private struct EditNameButton: View {
                 }
                 .padding(.horizontal, 4)
                 .padding(.vertical, 2)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .thawGlass(in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                 .foregroundStyle(.secondary)
 
                 Text(verbatim: "+")
@@ -746,7 +721,7 @@ private struct EditNameButton: View {
                 }
                 .padding(.horizontal, 4)
                 .padding(.vertical, 2)
-                .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                .thawGlass(in: RoundedRectangle(cornerRadius: 5, style: .continuous))
                 .foregroundStyle(.secondary)
             }
         }
@@ -772,7 +747,7 @@ private struct EditConfirmButton: View {
                     .bold()
                     .padding(.horizontal, 7)
                     .padding(.vertical, 5)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .thawGlass(in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             }
         }
     }
@@ -793,7 +768,7 @@ private struct EditDiscardButton: View {
                     .font(.system(size: 12))
                     .padding(.horizontal, 4)
                     .padding(.vertical, 2)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .thawGlass(in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             }
         }
     }
@@ -835,7 +810,7 @@ private struct ShowItemButton: View {
                     .bold()
                     .padding(.horizontal, 7)
                     .padding(.vertical, 5)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                    .thawGlass(in: RoundedRectangle(cornerRadius: 5, style: .continuous))
             }
         }
     }
