@@ -79,6 +79,60 @@ enum ControlOrderRules {
             && controlItems.hidden.isParkedOffMenuBarBand(among: items, screens: displays)
     }
 
+    /// Why no item can be judged against the Hidden divider's frame, or nil when it can.
+    static func dividerMisplacement(
+        _ controlItems: ControlItemPair,
+        among items: [MenuBarItem],
+        displays: [CGRect] = BarAxis.liveDisplayBounds()
+    ) -> String? {
+        if dividerIsOffTheBar(controlItems, among: items, displays: displays) {
+            return "the Hidden divider is parked off the bar"
+        }
+        if dividerIsRightOfTrailingAnchors(controlItems, among: items, displays: displays) {
+            return "the Hidden divider reads right of Control Center or the Clock"
+        }
+        return nil
+    }
+
+    /// Whether the Hidden divider reads right of, or over, Control Center or the Clock on its own bar.
+    /// macOS keeps those two last, so this is a frame left over from a display change, and
+    /// every item would read as stranded on the hidden side of it.
+    static func dividerIsRightOfTrailingAnchors(
+        _ controlItems: ControlItemPair,
+        among items: [MenuBarItem],
+        displays: [CGRect] = BarAxis.liveDisplayBounds()
+    ) -> Bool {
+        let divider = controlItems.hidden.bounds
+        let center = CGPoint(x: divider.midX, y: divider.midY)
+        guard !CacheDividers.isStandIn(controlItems.hidden), !divider.isEmpty,
+              let bar = displays.first(where: { $0.contains(center) })
+        else {
+            return false
+        }
+        return items.contains { item in
+            let rank = MenuBarItemTag.anchoredSystemItemRank(item.tag)
+            // The rank reads titles only, so a third-party item with one of these titles must not count.
+            return (rank == 1 || rank == 2) && item.tag.isSystemItem && item.isOnScreen
+                && bar.contains(CGPoint(x: item.bounds.midX, y: item.bounds.midY))
+                // Past the anchor's left edge: right of it, or over it, which can't be judged either.
+                && divider.maxX > item.bounds.minX
+        }
+    }
+
+    /// The dividers as a refreshed walk reads them, or nil when the walk lost the Hidden divider.
+    static func refreshedControlItems(
+        in items: [MenuBarItem],
+        hiddenControlItemWindowID: CGWindowID?,
+        alwaysHiddenControlItemWindowID: CGWindowID?
+    ) -> ControlItemPair? {
+        var items = items
+        return ControlItemPair(
+            items: &items,
+            hiddenControlItemWindowID: hiddenControlItemWindowID,
+            alwaysHiddenControlItemWindowID: alwaysHiddenControlItemWindowID
+        )
+    }
+
     /// Whether item frames are stated against more than one display's bar.
     ///
     /// macOS 27 draws the item set on every bar, and an app's AX frame names whichever bar
