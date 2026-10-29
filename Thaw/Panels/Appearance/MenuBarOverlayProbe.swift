@@ -87,6 +87,13 @@ final class MissionControlShieldProbe {
         self.owningScreen = owningScreen
     }
 
+    /// Defer notifications until Published has stored the value, so visibility and polling read committed activity.
+    var activityChanges: AnyPublisher<Bool, Never> {
+        $isActive
+            .receive(on: DispatchQueue.main)
+            .eraseToAnyPublisher()
+    }
+
     /// Orders the probe window on screen so the window server can move it.
     func start() {
         window.orderFrontRegardless()
