@@ -24,6 +24,10 @@ the items under New and Fixed.
 
 ## [Unreleased]
 
+### Fixed
+
+- Profiles whose saved files are missing can now be removed from the profile list.
+
 ## [3.0.0-alpha.11] - 2026-10-28
 
 **macOS 27 only · Build 118**

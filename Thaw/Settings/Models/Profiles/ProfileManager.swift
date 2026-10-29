@@ -484,7 +484,7 @@ final class ProfileManager {
 
     func deleteProfile(id: UUID) throws {
         let url = profileURL(for: id)
-        try FileManager.default.removeItem(at: url)
+        try ProfileDeletion.removeFile(at: url, isListed: profiles.contains { $0.id == id })
         profiles.removeAll { $0.id == id }
         try saveManifest()
     }
