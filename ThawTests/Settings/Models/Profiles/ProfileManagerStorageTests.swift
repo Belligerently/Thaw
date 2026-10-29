@@ -312,10 +312,18 @@ struct ProfileManagerStorageTests {
         }
     }
 
-    @Test("Updating everything keeps the name and identity and leaves no temporary profile")
-    func updateAll() throws {
+    /// Full captures must retain profile-specific automation, including disabled hooks.
+    @Test("Updating everything preserves identity and hooks without leaving a temporary profile", arguments: [false, true])
+    func updateAll(hasHooks: Bool) throws {
+        let automation = hasHooks ? ProfileAutomation(
+            preHook: HookScript(path: "/test/pre.scpt", timeoutSeconds: 23, isEnabled: false),
+            postHook: HookScript(path: "/test/post.sh", timeoutSeconds: 47)
+        ) : nil
         try ProfileTestDirectory.withManager(seeding: ["Keep"]) { manager, tmp in
             let meta = manager.profiles[0]
+            var original = try manager.loadProfile(id: meta.id)
+            original.automation = automation
+            try manager.replaceProfile(original)
             let appState = AppState()
             appState.settings.general.autoRehide = !Defaults.DefaultValue.autoRehide
 
@@ -326,9 +334,33 @@ struct ProfileManagerStorageTests {
             let updated = try manager.loadProfile(id: meta.id)
             #expect(updated.name == "Keep")
             #expect(updated.createdAt == meta.createdAt)
+            #expect(updated.automation == automation)
+            #expect(try ProfileManager(profilesDirectory: tmp).loadProfile(id: meta.id).automation == automation)
             #expect(updated.generalSettings.autoRehide == !Defaults.DefaultValue.autoRehide)
             let files = try FileManager.default.contentsOfDirectory(atPath: tmp.path).filter { $0.hasSuffix(".json") }
             #expect(files.count == 2, "the profile and the manifest, no leftover temporary file")
+        }
+    }
+
+    /// An unreadable original must fail before creating a temporary capture or replacing its file.
+    @Test("Updating an unreadable profile preserves its file and manifest")
+    func updateUnreadableProfile() throws {
+        try ProfileTestDirectory.withManager(seeding: ["Keep"]) { manager, tmp in
+            let id = manager.profiles[0].id
+            let url = tmp.appendingPathComponent("\(id.uuidString).json")
+            let invalidContent = Data("invalid profile".utf8)
+            try invalidContent.write(to: url)
+            let manifestURL = tmp.appendingPathComponent("profiles.json")
+            let manifest = try Data(contentsOf: manifestURL)
+
+            #expect(throws: DecodingError.self) {
+                try manager.updateProfile(id: id, scope: .all, appState: AppState())
+            }
+
+            #expect(try Data(contentsOf: url) == invalidContent)
+            #expect(try Data(contentsOf: manifestURL) == manifest)
+            #expect(manager.profiles.map(\.id) == [id])
+            #expect(try FileManager.default.contentsOfDirectory(atPath: tmp.path).count == 2)
         }
     }
 

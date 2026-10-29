@@ -24,6 +24,10 @@ the items under New and Fixed.
 
 ## [Unreleased]
 
+### Fixed
+
+- Updating all of a profile’s settings and layout now preserves its pre/post scripts.
+
 ## [3.0.0-alpha.11] - 2026-10-28
 
 **macOS 27 only · Build 118**
