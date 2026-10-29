@@ -30,6 +30,8 @@ the items under New and Fixed.
 
 ### Fixed
 
+- Updating all of a profile’s settings and layout now preserves its pre/post scripts.
+
 - Profiles whose saved files are missing can now be removed from the profile list.
 
 ## [3.0.0-alpha.11] - 2026-10-28
