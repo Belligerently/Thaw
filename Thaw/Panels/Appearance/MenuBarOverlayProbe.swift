@@ -67,6 +67,9 @@ final class MissionControlShieldProbe {
     /// The poll subscription, alive only while shouldRun holds.
     private var cancellable: AnyCancellable?
 
+    /// Whether the probe currently owns an active polling subscription.
+    var isPolling: Bool { cancellable != nil }
+
     /// The least time between two Exposé shield scans while the probe stays
     /// displaced.
     private static let shieldCheckInterval: Duration = .seconds(1)

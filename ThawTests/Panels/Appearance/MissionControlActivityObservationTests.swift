@@ -29,18 +29,18 @@ struct MissionControlActivityObservationTests {
         let appState = AppState()
         let panel = MenuBarOverlayPanel(appState: appState, owningScreen: screen, missionControlProbe: probe)
         defer { panel.close() }
-        let shouldRun = try #require(probe.shouldRun)
-        // Keep the timer from overwriting injected activity while retaining the panel's polling rule for assertions.
+        // Keep the timer from overwriting injected activity.
         probe.shouldRun = { false }
         await drainNotifications()
         #expect(!panel.isVisible)
         let restingAlpha = panel.alphaValue
+        #expect(probe.isPolling == (restingAlpha > 0))
 
         for active in [true, false, true, false] {
             probe.isActive = active
             await drainNotifications()
             #expect(panel.alphaValue == (active ? 0 : restingAlpha))
-            #expect(shouldRun() == (active || restingAlpha > 0), "an invisible active probe must keep polling to detect exit")
+            #expect(probe.isPolling == (active || restingAlpha > 0), "an invisible active probe must keep polling to detect exit")
         }
     }
 
