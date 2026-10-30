@@ -29,6 +29,7 @@ struct MissionControlActivityObservationTests {
         let appState = AppState()
         let panel = MenuBarOverlayPanel(appState: appState, owningScreen: screen, missionControlProbe: probe)
         defer { panel.close() }
+        let shouldRun = try #require(probe.shouldRun)
         // Keep the timer from overwriting injected activity.
         probe.shouldRun = { false }
         await drainNotifications()
@@ -40,6 +41,7 @@ struct MissionControlActivityObservationTests {
             probe.isActive = active
             await drainNotifications()
             #expect(panel.alphaValue == (active ? 0 : restingAlpha))
+            #expect(shouldRun() == (active || restingAlpha > 0))
             #expect(probe.isPolling == (active || restingAlpha > 0), "an invisible active probe must keep polling to detect exit")
         }
     }
