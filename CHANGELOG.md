@@ -39,6 +39,8 @@ the items under New and Fixed.
 
 ### Fixed
 
+- Undoing profile creation or duplication now preserves the current profile selection and clears it only when that profile is removed.
+
 - Capture Hidden Items now correctly counts pictures of items hidden with Native hiding.
 
 - **Hidden items no longer collapse right after you point at them or show them again.** A timed rehide that was already finishing could still hide the section you had just reopened.
